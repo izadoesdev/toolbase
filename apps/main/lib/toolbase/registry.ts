@@ -15,7 +15,7 @@ import { bugReportSchema, productSchema, reviewSchema } from "./schema";
 
 let seedProducts: Product[] = [];
 let seedLoaded = false;
-let dbProducts: Product[] = []; // only approved DB products
+let dbProducts: Product[] = []; // approved only
 
 function loadSeed(): Product[] {
   const path = join(process.cwd(), "data", "products.json");
@@ -73,7 +73,7 @@ export async function addProductToDb(
     status: "processing",
     submittedBy: submittedBy ?? null,
   });
-  // Do NOT add to dbProducts cache — stays hidden until approved
+  // Not added to dbProducts cache — hidden until approved
   return { ok: true };
 }
 
@@ -142,7 +142,6 @@ export async function approveProduct(
     .set({ status: "approved" })
     .where(eq(catalogProduct.id, id));
 
-  // Add to in-memory cache so it shows immediately
   const product = productSchema.parse(rows[0].data);
   dbProducts = [...dbProducts, product];
 
