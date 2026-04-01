@@ -1,5 +1,13 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { eq } from "drizzle-orm";
+import { uuidv7 } from "uuidv7";
+import { db } from "@/lib/db";
+import {
+  bugReport as bugReportTable,
+  catalogProduct,
+  review as reviewTable,
+} from "@/lib/db/schema";
 import type { QueryFilters } from "./match";
 import { queryProducts } from "./match";
 import type {
@@ -11,7 +19,7 @@ import type {
 } from "./schema";
 import { bugReportSchema, productSchema, reviewSchema } from "./schema";
 
-// ── Products ───────────────────────────────────────────────────────────────
+// ── Seed ───────────────────────────────────────────────────────────────────
 
 let seedProducts: Product[] = [];
 let seedLoaded = false;
@@ -44,6 +52,8 @@ function allProducts(): Product[] {
   return [...byId.values()];
 }
 
+// ── Products ───────────────────────────────────────────────────────────────
+
 export function listProducts(): Product[] {
   return allProducts();
 }
@@ -60,9 +70,6 @@ export async function addProductToDb(
   product: Product,
   submittedBy?: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const { db } = await import("@/lib/db");
-  const { catalogProduct } = await import("@/lib/db/schema");
-
   if (allProducts().some((p) => p.id === product.id)) {
     return { ok: false, error: `Product id "${product.id}" already exists` };
   }
@@ -73,16 +80,12 @@ export async function addProductToDb(
     status: "processing",
     submittedBy: submittedBy ?? null,
   });
-  // Not added to dbProducts cache — hidden until approved
+
   return { ok: true };
 }
 
 export async function loadDbProducts(): Promise<void> {
   try {
-    const { db } = await import("@/lib/db");
-    const { catalogProduct } = await import("@/lib/db/schema");
-    const { eq } = await import("drizzle-orm");
-
     const rows = await db
       .select()
       .from(catalogProduct)
@@ -93,7 +96,7 @@ export async function loadDbProducts(): Promise<void> {
   }
 }
 
-// ── Admin: pending product management ─────────────────────────────────────
+// ── Admin ──────────────────────────────────────────────────────────────────
 
 export interface PendingProduct {
   createdAt: Date;
@@ -103,10 +106,6 @@ export interface PendingProduct {
 }
 
 export async function listPendingProducts(): Promise<PendingProduct[]> {
-  const { db } = await import("@/lib/db");
-  const { catalogProduct } = await import("@/lib/db/schema");
-  const { eq } = await import("drizzle-orm");
-
   const rows = await db
     .select()
     .from(catalogProduct)
@@ -114,26 +113,22 @@ export async function listPendingProducts(): Promise<PendingProduct[]> {
     .orderBy(catalogProduct.createdAt);
 
   return rows.map((r) => ({
-    id: r.id,
-    data: productSchema.parse(r.data),
-    submittedBy: r.submittedBy,
     createdAt: r.createdAt,
+    data: productSchema.parse(r.data),
+    id: r.id,
+    submittedBy: r.submittedBy,
   }));
 }
 
 export async function approveProduct(
   id: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const { db } = await import("@/lib/db");
-  const { catalogProduct } = await import("@/lib/db/schema");
-  const { eq } = await import("drizzle-orm");
-
-  const rows = await db
+  const [row] = await db
     .select()
     .from(catalogProduct)
     .where(eq(catalogProduct.id, id));
 
-  if (rows.length === 0) {
+  if (!row) {
     return { ok: false, error: `No product with id "${id}"` };
   }
 
@@ -142,25 +137,19 @@ export async function approveProduct(
     .set({ status: "approved" })
     .where(eq(catalogProduct.id, id));
 
-  const product = productSchema.parse(rows[0].data);
-  dbProducts = [...dbProducts, product];
-
+  dbProducts = [...dbProducts, productSchema.parse(row.data)];
   return { ok: true };
 }
 
 export async function rejectProduct(
   id: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const { db } = await import("@/lib/db");
-  const { catalogProduct } = await import("@/lib/db/schema");
-  const { eq } = await import("drizzle-orm");
-
-  const rows = await db
+  const [row] = await db
     .select()
     .from(catalogProduct)
     .where(eq(catalogProduct.id, id));
 
-  if (rows.length === 0) {
+  if (!row) {
     return { ok: false, error: `No product with id "${id}"` };
   }
 
@@ -184,12 +173,8 @@ export async function submitReview(
     };
   }
 
-  const { db } = await import("@/lib/db");
-  const { review: reviewTable } = await import("@/lib/db/schema");
-
-  const id = crypto.randomUUID();
-  const submitted_at = new Date().toISOString();
-  const data: Review = { ...input, id, submitted_at };
+  const id = uuidv7();
+  const data: Review = { ...input, id, submitted_at: new Date().toISOString() };
 
   await db
     .insert(reviewTable)
@@ -202,10 +187,6 @@ export async function getReviews(
   limit = 20
 ): Promise<Review[]> {
   try {
-    const { db } = await import("@/lib/db");
-    const { review: reviewTable } = await import("@/lib/db/schema");
-    const { eq } = await import("drizzle-orm");
-
     const rows = await db
       .select()
       .from(reviewTable)
@@ -221,13 +202,13 @@ export async function getReviews(
 
 export async function getReviewSummary(
   productId: string
-): Promise<{ count: number; avg_rating: number | null }> {
+): Promise<{ avg_rating: number | null; count: number }> {
   const reviews = await getReviews(productId, 100);
   if (reviews.length === 0) {
-    return { count: 0, avg_rating: null };
+    return { avg_rating: null, count: 0 };
   }
   const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
-  return { count: reviews.length, avg_rating: Math.round(avg * 10) / 10 };
+  return { avg_rating: Math.round(avg * 10) / 10, count: reviews.length };
 }
 
 // ── Bug reports ────────────────────────────────────────────────────────────
@@ -242,12 +223,12 @@ export async function submitBugReport(
     };
   }
 
-  const { db } = await import("@/lib/db");
-  const { bugReport: bugReportTable } = await import("@/lib/db/schema");
-
-  const id = crypto.randomUUID();
-  const submitted_at = new Date().toISOString();
-  const data: BugReport = { ...input, id, submitted_at };
+  const id = uuidv7();
+  const data: BugReport = {
+    ...input,
+    id,
+    submitted_at: new Date().toISOString(),
+  };
 
   await db
     .insert(bugReportTable)
@@ -260,10 +241,6 @@ export async function getBugReports(
   limit = 20
 ): Promise<BugReport[]> {
   try {
-    const { db } = await import("@/lib/db");
-    const { bugReport: bugReportTable } = await import("@/lib/db/schema");
-    const { eq } = await import("drizzle-orm");
-
     const rows = await db
       .select()
       .from(bugReportTable)
