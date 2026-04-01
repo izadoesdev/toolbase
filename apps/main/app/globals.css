@@ -250,4 +250,19 @@
   .win-desktop-bg {
     background: #008080;
   }
+
+  .win-menu-item {
+    padding: 2px 8px;
+    font-size: 11px;
+    color: #000000;
+    text-decoration: none;
+    font-family: 'Tahoma', Arial, sans-serif;
+    display: inline-block;
+    background: transparent;
+  }
+
+  .win-menu-item:hover {
+    background: #316ac5;
+    color: #ffffff;
+  }
 }

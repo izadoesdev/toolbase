@@ -90,24 +90,9 @@ export function SiteHeader() {
         <nav className="flex items-center gap-0">
           {NAV_LINKS.map(({ href, label }) => (
             <Link
+              className="win-menu-item"
               href={href}
               key={href}
-              style={{
-                padding: "2px 8px",
-                fontSize: "11px",
-                color: "#000000",
-                textDecoration: "none",
-                fontFamily: "'Tahoma', Arial, sans-serif",
-                display: "inline-block",
-              }}
-              onMouseEnter={(e) => {
-                (e.target as HTMLElement).style.background = "#316ac5";
-                (e.target as HTMLElement).style.color = "#ffffff";
-              }}
-              onMouseLeave={(e) => {
-                (e.target as HTMLElement).style.background = "transparent";
-                (e.target as HTMLElement).style.color = "#000000";
-              }}
             >
               {label}
             </Link>
