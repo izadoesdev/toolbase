@@ -1,10 +1,22 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "NODE_ENV",
+    "DATABASE_URL",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "NEXT_PUBLIC_BETTER_AUTH_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "GITHUB_CLIENT_ID",
+    "GITHUB_CLIENT_SECRET",
+    "PEER_ADMIN_TOKEN"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "$TURBO_ROOT$/.env"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "lint": {
@@ -15,7 +27,24 @@
     },
     "dev": {
       "cache": false,
+      "persistent": true,
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "$TURBO_ROOT$/.env"]
+    },
+    "db:generate": {
+      "cache": false,
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "$TURBO_ROOT$/.env"]
+    },
+    "db:push": {
+      "cache": false,
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "$TURBO_ROOT$/.env"]
+    },
+    "db:studio": {
+      "cache": false,
       "persistent": true
+    },
+    "auth:generate": {
+      "cache": false,
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "$TURBO_ROOT$/.env"]
     }
   }
 }

@@ -9,7 +9,11 @@
     "check-types": "turbo run check-types",
     "check": "ultracite check",
     "fix": "ultracite fix",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "db:generate": "turbo run db:generate",
+    "db:push": "turbo run db:push",
+    "db:studio": "turbo run db:studio",
+    "auth:generate": "turbo run auth:generate"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.9",
