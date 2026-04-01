@@ -17,8 +17,8 @@ const FOOTER_LINKS: Record<string, FooterLink[]> = {
     { href: "/api", label: "API info" },
   ],
   Company: [
-    { href: "https://github.com/iazlabs", label: "GitHub", external: true },
-    { href: "https://x.com/toolbase_ai", label: "X / Twitter", external: true },
+    { href: "https://github.com/izadoesdev", label: "GitHub", external: true },
+    { href: "https://x.com/izadoesdev", label: "X / Twitter", external: true },
   ],
 };
 

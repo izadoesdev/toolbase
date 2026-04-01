@@ -24,10 +24,10 @@ interface Hit {
 }
 
 const SUGGESTIONS = [
-  "mcp server tools",
-  "agent auth stack",
-  "postgres serverless",
-  "observability api",
+  "auth with SSO for B2B",
+  "serverless postgres",
+  "send transactional email",
+  "LLM observability",
 ];
 
 function SearchResults({
@@ -41,25 +41,32 @@ function SearchResults({
     return (
       <section className="space-y-3">
         <p className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
-          In the catalog
+          What agents are using
         </p>
         <ul className="grid gap-2">
           {preview.map((p) => (
             <li
-              className="flex items-baseline justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm"
+              className="flex flex-col gap-1 rounded-2xl border border-border bg-card px-4 py-3 text-sm"
               key={p.id}
             >
-              <span className="font-medium text-foreground">{p.name}</span>
-              <span className="flex shrink-0 items-center gap-2">
-                {p.mcp.supported ? (
-                  <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground uppercase tracking-wide">
-                    MCP
+              <div className="flex items-center justify-between gap-3">
+                <span className="font-medium text-foreground">{p.name}</span>
+                <span className="flex shrink-0 items-center gap-2">
+                  {p.mcp.supported ? (
+                    <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground uppercase tracking-wide">
+                      MCP
+                    </span>
+                  ) : null}
+                  <span className="text-muted-foreground text-xs">
+                    {p.category}
                   </span>
-                ) : null}
-                <span className="text-muted-foreground text-xs">
-                  {p.category}
                 </span>
-              </span>
+              </div>
+              {p.description ? (
+                <p className="line-clamp-1 text-muted-foreground text-xs leading-relaxed">
+                  {p.description}
+                </p>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -149,7 +156,7 @@ export function ToolbaseSearch({ preview }: { preview: Product[] }) {
           className="h-11 flex-1 rounded-2xl border-border bg-background text-base"
           name="q"
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="e.g. auth, email, database…"
+          placeholder="describe the problem you're trying to solve…"
           value={query}
         />
         <Button

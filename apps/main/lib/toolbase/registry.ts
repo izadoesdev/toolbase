@@ -15,7 +15,7 @@ import { bugReportSchema, productSchema, reviewSchema } from "./schema";
 
 let seedProducts: Product[] = [];
 let seedLoaded = false;
-let dbProducts: Product[] = [];
+let dbProducts: Product[] = []; // only approved DB products
 
 function loadSeed(): Product[] {
   const path = join(process.cwd(), "data", "products.json");
@@ -57,7 +57,8 @@ export function searchProducts(query: string, filters?: QueryFilters) {
 }
 
 export async function addProductToDb(
-  product: Product
+  product: Product,
+  submittedBy?: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const { db } = await import("@/lib/db");
   const { catalogProduct } = await import("@/lib/db/schema");
@@ -66,8 +67,13 @@ export async function addProductToDb(
     return { ok: false, error: `Product id "${product.id}" already exists` };
   }
 
-  await db.insert(catalogProduct).values({ id: product.id, data: product });
-  dbProducts = [...dbProducts, product];
+  await db.insert(catalogProduct).values({
+    id: product.id,
+    data: product,
+    status: "processing",
+    submittedBy: submittedBy ?? null,
+  });
+  // Do NOT add to dbProducts cache — stays hidden until approved
   return { ok: true };
 }
 
@@ -75,11 +81,96 @@ export async function loadDbProducts(): Promise<void> {
   try {
     const { db } = await import("@/lib/db");
     const { catalogProduct } = await import("@/lib/db/schema");
-    const rows = await db.select().from(catalogProduct);
+    const { eq } = await import("drizzle-orm");
+
+    const rows = await db
+      .select()
+      .from(catalogProduct)
+      .where(eq(catalogProduct.status, "approved"));
     dbProducts = rows.map((r) => productSchema.parse(r.data));
   } catch {
     dbProducts = [];
   }
+}
+
+// ── Admin: pending product management ─────────────────────────────────────
+
+export interface PendingProduct {
+  createdAt: Date;
+  data: Product;
+  id: string;
+  submittedBy: string | null;
+}
+
+export async function listPendingProducts(): Promise<PendingProduct[]> {
+  const { db } = await import("@/lib/db");
+  const { catalogProduct } = await import("@/lib/db/schema");
+  const { eq } = await import("drizzle-orm");
+
+  const rows = await db
+    .select()
+    .from(catalogProduct)
+    .where(eq(catalogProduct.status, "processing"))
+    .orderBy(catalogProduct.createdAt);
+
+  return rows.map((r) => ({
+    id: r.id,
+    data: productSchema.parse(r.data),
+    submittedBy: r.submittedBy,
+    createdAt: r.createdAt,
+  }));
+}
+
+export async function approveProduct(
+  id: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { db } = await import("@/lib/db");
+  const { catalogProduct } = await import("@/lib/db/schema");
+  const { eq } = await import("drizzle-orm");
+
+  const rows = await db
+    .select()
+    .from(catalogProduct)
+    .where(eq(catalogProduct.id, id));
+
+  if (rows.length === 0) {
+    return { ok: false, error: `No product with id "${id}"` };
+  }
+
+  await db
+    .update(catalogProduct)
+    .set({ status: "approved" })
+    .where(eq(catalogProduct.id, id));
+
+  // Add to in-memory cache so it shows immediately
+  const product = productSchema.parse(rows[0].data);
+  dbProducts = [...dbProducts, product];
+
+  return { ok: true };
+}
+
+export async function rejectProduct(
+  id: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { db } = await import("@/lib/db");
+  const { catalogProduct } = await import("@/lib/db/schema");
+  const { eq } = await import("drizzle-orm");
+
+  const rows = await db
+    .select()
+    .from(catalogProduct)
+    .where(eq(catalogProduct.id, id));
+
+  if (rows.length === 0) {
+    return { ok: false, error: `No product with id "${id}"` };
+  }
+
+  await db
+    .update(catalogProduct)
+    .set({ status: "rejected" })
+    .where(eq(catalogProduct.id, id));
+
+  return { ok: true };
 }
 
 // ── Reviews ────────────────────────────────────────────────────────────────

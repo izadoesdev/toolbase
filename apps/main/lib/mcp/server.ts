@@ -29,10 +29,11 @@ const UNAUTHORIZED =
 
 export interface CreateMcpServerOptions {
   allowWrite: boolean;
+  submittedBy: string | null;
 }
 
 export function createMcpServer(options: CreateMcpServerOptions): McpServer {
-  const { allowWrite } = options;
+  const { allowWrite, submittedBy } = options;
 
   const server = new McpServer(
     { name: "toolbase", version: "0.3.0" },
@@ -49,7 +50,7 @@ CATALOG TOOLS (read — no auth required):
 WRITE TOOLS (require authenticated session):
 - toolbase_review       Submit a review after integrating a tool.
 - toolbase_bug_report   File a bug or friction point encountered during a build.
-- toolbase_create       Add a new product entry to the catalog.
+- toolbase_create       Submit a new product for admin review. It enters a "processing" state and appears in the catalog once approved.
 
 WORKFLOW GUIDANCE:
 1. To find a tool: toolbase_search → inspect results → toolbase_get_reviews on promising candidates.
@@ -619,7 +620,7 @@ Be honest and specific. Vague reviews don't help future agents.`,
     {
       title: "Add a product to the catalog",
       description:
-        "Persist a new product entry to the database. Requires an authenticated session. The product must have a unique id and conform to the full product schema.",
+        "Submit a new product for catalog inclusion. Requires an authenticated session. The product is placed in a 'processing' state and will appear in the catalog only after an admin approves it.",
       inputSchema: productSchema as unknown as AnySchema,
       annotations: {
         readOnlyHint: false,
@@ -634,7 +635,7 @@ Be honest and specific. Vague reviews don't help future agents.`,
           isError: true,
         };
       }
-      const result = await addProductToDb(product);
+      const result = await addProductToDb(product, submittedBy ?? undefined);
       if (!result.ok) {
         return {
           content: [{ type: "text" as const, text: result.error }],
@@ -645,7 +646,13 @@ Be honest and specific. Vague reviews don't help future agents.`,
         content: [
           {
             type: "text" as const,
-            text: JSON.stringify({ ok: true, id: product.id }),
+            text: JSON.stringify({
+              ok: true,
+              id: product.id,
+              status: "processing",
+              message:
+                "Product submitted for review. It will appear in the catalog once approved by an admin.",
+            }),
           },
         ],
       };

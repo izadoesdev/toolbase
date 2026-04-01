@@ -1,14 +1,36 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp";
 import { createMcpServer } from "@/lib/mcp/server";
-import { canMutateCatalog } from "@/lib/toolbase/permissions";
+import { canMutateCatalog, getSessionUserId } from "@/lib/toolbase/permissions";
 
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
   "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, Cookie, mcp-session-id, Last-Event-ID, mcp-protocol-version",
+    "Content-Type, Authorization, x-api-key, Cookie, mcp-session-id, Last-Event-ID, mcp-protocol-version",
   "Access-Control-Expose-Headers": "mcp-session-id, mcp-protocol-version",
 };
+
+/**
+ * Validate the Origin header to prevent DNS rebinding attacks (MCP spec §Auth).
+ * Non-browser clients (CLI tools, Claude Code) don't send Origin, so we only
+ * reject requests that DO send an unexpected origin.
+ */
+function isOriginAllowed(origin: string | null): boolean {
+  if (!origin) {
+    return true; // non-browser / direct API call — always allow
+  }
+  try {
+    const { hostname } = new URL(origin);
+    return (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "toolbase.dev" ||
+      hostname.endsWith(".toolbase.dev")
+    );
+  } catch {
+    return false;
+  }
+}
 
 function withCors(response: Response): Response {
   const headers = new Headers(response.headers);
@@ -27,12 +49,18 @@ export async function handleMcpRequest(request: Request): Promise<Response> {
     });
   }
 
+  const origin = request.headers.get("origin");
+  if (!isOriginAllowed(origin)) {
+    return new Response("Forbidden", { status: 403 });
+  }
+
   const allowWrite = await canMutateCatalog(request.headers);
+  const submittedBy = await getSessionUserId(request.headers);
 
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
   });
-  const mcp = createMcpServer({ allowWrite });
+  const mcp = createMcpServer({ allowWrite, submittedBy });
   await mcp.connect(transport);
   const response = await transport.handleRequest(request);
   return withCors(response);

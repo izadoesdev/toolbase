@@ -3,6 +3,7 @@
 import {
   Logout01Icon,
   Settings01Icon,
+  Shield01Icon,
   UserIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -161,6 +162,16 @@ export function SessionControls() {
             </DropdownMenuLabel>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
+          {(user as { role?: string }).role === "admin" && (
+            <DropdownMenuItem render={<Link href="/admin" />}>
+              <HugeiconsIcon
+                className="size-4"
+                icon={Shield01Icon}
+                strokeWidth={2}
+              />
+              Admin
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem render={<Link href="/settings" />}>
             <HugeiconsIcon
               className="size-4"

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "toolbase": {
+      "type": "http",
+      "url": "http://localhost:3000/api/mcp",
+      "headers": {
+        "x-api-key": "tb_xsSvgrpLUaColtwRzFihLfxoEsEJuEjVebKyFfwDHBDmrXwCJlTgHWVjsbrPDcYB"
+      }
+    }
+  }
+}

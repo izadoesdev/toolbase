@@ -15,6 +15,10 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
+  role: text("role").default("user").notNull(),
+  banned: boolean("banned").default(false),
+  banReason: text("ban_reason"),
+  banExpires: timestamp("ban_expires"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -84,6 +88,10 @@ export const verification = pgTable(
 export const catalogProduct = pgTable("catalog_product", {
   id: text("id").primaryKey(),
   data: jsonb("data").notNull(),
+  // "processing" = pending admin review, "approved" = live in catalog, "rejected" = denied
+  // Default is "approved" so existing rows remain visible after migration
+  status: text("status").default("approved").notNull(),
+  submittedBy: text("submitted_by"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -124,7 +132,7 @@ export const apikey = pgTable(
     lastRefillAt: timestamp("last_refill_at"),
     enabled: boolean("enabled").default(true),
     rateLimitEnabled: boolean("rate_limit_enabled").default(true),
-    rateLimitTimeWindow: integer("rate_limit_time_window").default(86400000),
+    rateLimitTimeWindow: integer("rate_limit_time_window").default(86_400_000),
     rateLimitMax: integer("rate_limit_max").default(10),
     requestCount: integer("request_count").default(0),
     remaining: integer("remaining"),
@@ -160,4 +168,3 @@ export const accountRelations = relations(account, ({ one }) => ({
     references: [user.id],
   }),
 }));
-
