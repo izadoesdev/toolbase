@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BRAND_NAME, BrandLogo } from "@/components/brand-logo";
+import { BRAND_NAME } from "@/components/brand-logo";
 
 interface FooterLink {
   external?: boolean;
@@ -24,68 +24,121 @@ const FOOTER_LINKS: Record<string, FooterLink[]> = {
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-border border-t bg-muted/40">
-      <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
-          {/* Brand */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center gap-2.5">
-              <BrandLogo size="sm" />
-              <p className="font-display font-semibold text-base text-foreground">
-                {BRAND_NAME}
+    <footer style={{ background: "#008080", padding: "12px 16px" }}>
+      {/* Taskbar style footer */}
+      <div style={{
+        background: "#d4d0c8",
+        borderTop: "2px solid #ffffff",
+        borderLeft: "2px solid #ffffff",
+        borderRight: "2px solid #404040",
+        borderBottom: "2px solid #404040",
+        padding: "12px 16px",
+      }}>
+        {/* Start-button style brand */}
+        <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5" style={{ marginBottom: "16px" }}>
+            {/* Brand */}
+            <div className="lg:col-span-2">
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                <span style={{
+                  background: "linear-gradient(90deg, #1e3c78 0%, #316ac5 100%)",
+                  color: "#ffffff",
+                  fontWeight: "bold",
+                  fontSize: "11px",
+                  padding: "4px 12px",
+                  borderTop: "1px solid #6699cc",
+                  borderLeft: "1px solid #6699cc",
+                  borderRight: "1px solid #0a246a",
+                  borderBottom: "1px solid #0a246a",
+                  fontFamily: "'Tahoma', Arial, sans-serif",
+                  cursor: "default",
+                }}>
+                  🧰 {BRAND_NAME}
+                </span>
+              </div>
+              <p style={{ fontSize: "11px", color: "#000000", lineHeight: "1.6", maxWidth: "240px", marginBottom: "8px" }}>
+                The tool catalog built for AI agents. Search semantically, read
+                agent reviews, and submit feedback — all over MCP.
               </p>
+              <span style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                border: "1px solid #808080",
+                background: "#ece9d8",
+                padding: "2px 8px",
+                fontSize: "9px",
+                color: "#000000",
+              }}>
+                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#00aa00", display: "inline-block" }} />
+                MCP-native
+              </span>
             </div>
-            <p className="mt-3 max-w-xs text-muted-foreground text-sm leading-relaxed">
-              The tool catalog built for AI agents. Search semantically, read
-              agent reviews, and submit feedback — all over MCP.
-            </p>
-            <p className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 font-mono text-muted-foreground text-xs">
-              <span className="size-1.5 rounded-full bg-green-500" />
-              MCP-native
-            </p>
+
+            {/* Link columns */}
+            {Object.entries(FOOTER_LINKS).map(([section, links]) => (
+              <div key={section}>
+                <p style={{
+                  fontSize: "10px",
+                  fontWeight: "bold",
+                  color: "#000000",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  marginBottom: "8px",
+                  borderBottom: "1px solid #808080",
+                  paddingBottom: "4px",
+                }}>
+                  {section}
+                </p>
+                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                  {links.map(({ href, label, external }) => (
+                    <li key={href} style={{ marginBottom: "4px" }}>
+                      {external ? (
+                        <a
+                          className="win-link"
+                          href={href}
+                          rel="noopener noreferrer"
+                          style={{ fontSize: "11px" }}
+                          target="_blank"
+                        >
+                          {label}
+                        </a>
+                      ) : (
+                        <Link
+                          className="win-link"
+                          href={href}
+                          style={{ fontSize: "11px" }}
+                        >
+                          {label}
+                        </Link>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
 
-          {/* Link columns */}
-          {Object.entries(FOOTER_LINKS).map(([section, links]) => (
-            <div key={section}>
-              <p className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-                {section}
-              </p>
-              <ul className="mt-3 space-y-2 text-sm">
-                {links.map(({ href, label, external }) => (
-                  <li key={href}>
-                    {external ? (
-                      <a
-                        className="text-muted-foreground transition-colors hover:text-foreground"
-                        href={href}
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        {label}
-                      </a>
-                    ) : (
-                      <Link
-                        className="text-muted-foreground transition-colors hover:text-foreground"
-                        href={href}
-                      >
-                        {label}
-                      </Link>
-                    )}
-                  </li>
-                ))}
-              </ul>
+          {/* Status bar */}
+          <div className="win-statusbar" style={{ borderTop: "1px solid #808080", paddingTop: "6px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: "0" }}>
+              <span className="win-inset-panel" style={{ padding: "1px 8px", fontSize: "11px", color: "#000000" }}>
+                © {new Date().getFullYear()} {BRAND_NAME}. Built for agents, by agents.
+              </span>
             </div>
-          ))}
-        </div>
-
-        <div className="mt-12 flex flex-col gap-2 border-border border-t pt-8 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-muted-foreground text-xs">
-            © {new Date().getFullYear()} {BRAND_NAME}. Built for agents, by
-            agents.
-          </p>
-          <p className="font-mono text-muted-foreground text-xs">
-            v0.3.0 · MCP Streamable HTTP
-          </p>
+            <div style={{ display: "flex", gap: "2px" }}>
+              <span className="win-inset-panel" style={{ padding: "1px 8px", fontSize: "9px", color: "#444444", fontFamily: "'Courier New', monospace" }}>
+                v0.3.0
+              </span>
+              <span className="win-inset-panel" style={{ padding: "1px 8px", fontSize: "9px", color: "#444444" }}>
+                MCP Streamable HTTP
+              </span>
+              <span className="win-inset-panel" style={{ padding: "1px 8px", fontSize: "9px", color: "#000000", display: "flex", alignItems: "center", gap: "4px" }}>
+                <span style={{ width: "8px", height: "8px", background: "#00aa00", display: "inline-block", border: "1px solid #007700" }} />
+                Online
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

@@ -2,17 +2,7 @@
 
 import { useCallback, useState, useTransition } from "react";
 import { searchToolbase } from "@/app/actions/toolbase";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner";
 import type { Product } from "@/lib/toolbase/schema";
-import { cn } from "@/lib/utils";
 
 interface Hit {
   category: string;
@@ -33,88 +23,130 @@ const SUGGESTIONS = [
 function SearchResults({
   results,
   preview,
+  pending,
 }: {
   results: Hit[] | null;
   preview: Product[];
+  pending: boolean;
 }) {
   if (results === null) {
     return (
-      <section className="space-y-3">
-        <p className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
+      <section>
+        <p style={{ fontSize: "10px", fontWeight: "bold", color: "#444444", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
           In the catalog
         </p>
-        <ul className="grid gap-2">
-          {preview.map((p) => (
-            <li
-              className="flex items-baseline justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm"
+        <div className="win-listbox" style={{ background: "#ffffff", width: "100%" }}>
+          {preview.map((p, i) => (
+            <div
+              className="win-listbox-item"
               key={p.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "3px 6px",
+                fontSize: "11px",
+                borderBottom: i < preview.length - 1 ? "1px solid #d4d0c8" : "none",
+                cursor: "default",
+              }}
             >
-              <span className="font-medium text-foreground">{p.name}</span>
-              <span className="flex shrink-0 items-center gap-2">
+              <span style={{ color: "#000000" }}>{p.name}</span>
+              <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 {p.mcp.supported ? (
-                  <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground uppercase tracking-wide">
+                  <span style={{
+                    border: "1px solid #808080",
+                    background: "#d4d0c8",
+                    padding: "1px 4px",
+                    fontSize: "9px",
+                    fontWeight: "bold",
+                    color: "#000000",
+                    fontFamily: "'Courier New', monospace",
+                  }}>
                     MCP
                   </span>
                 ) : null}
-                <span className="text-muted-foreground text-xs">
+                <span style={{ fontSize: "9px", color: "#444444" }}>
                   {p.category}
                 </span>
               </span>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </section>
     );
   }
 
   if (results.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm">
-        Nothing matched that yet. Try different words or one of the suggestions
-        above.
-      </p>
+      <div className="win-inset-panel" style={{ padding: "12px", background: "#ece9d8" }}>
+        <p style={{ fontSize: "11px", color: "#444444" }}>
+          Nothing matched that yet. Try different words or one of the suggestions above.
+        </p>
+      </div>
     );
   }
 
   return (
-    <ul className="space-y-3">
-      {results.map((hit) => (
-        <li key={hit.id}>
-          <Card className="border-border bg-card" size="sm">
-            <CardHeader className="gap-1 pb-3">
-              <div className="flex items-start justify-between gap-2">
-                <CardTitle className="font-semibold text-base leading-snug">
-                  {hit.name}
-                </CardTitle>
-                <span className="flex shrink-0 items-center gap-1.5">
-                  {hit.mcp_supported ? (
-                    <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground uppercase tracking-wide">
-                      MCP
-                    </span>
-                  ) : null}
-                  <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground uppercase tracking-wide">
-                    {hit.category}
-                  </span>
-                  {hit.docs_url ? (
-                    <a
-                      className="rounded-md border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground uppercase tracking-wide transition-colors hover:text-foreground"
-                      href={hit.docs_url}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      Docs ↗
-                    </a>
-                  ) : null}
+    <div className="win-listbox" style={{ background: "#ffffff" }}>
+      {results.map((hit, i) => (
+        <div
+          className="win-listbox-item"
+          key={hit.id}
+          style={{
+            padding: "6px 8px",
+            fontSize: "11px",
+            borderBottom: i < results.length - 1 ? "1px solid #d4d0c8" : "none",
+            cursor: "default",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2px" }}>
+            <strong style={{ color: "#000000" }}>{hit.name}</strong>
+            <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              {hit.mcp_supported ? (
+                <span style={{
+                  border: "1px solid #808080",
+                  background: "#d4d0c8",
+                  padding: "1px 4px",
+                  fontSize: "9px",
+                  fontWeight: "bold",
+                  color: "#000000",
+                  fontFamily: "'Courier New', monospace",
+                }}>
+                  MCP
                 </span>
-              </div>
-              <CardDescription className="text-sm leading-relaxed">
-                {hit.description}
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </li>
+              ) : null}
+              <span style={{
+                background: "#d4d0c8",
+                border: "1px solid #808080",
+                padding: "1px 4px",
+                fontSize: "9px",
+                color: "#000000",
+              }}>
+                {hit.category}
+              </span>
+              {hit.docs_url ? (
+                <a
+                  href={hit.docs_url}
+                  rel="noopener noreferrer"
+                  style={{
+                    background: "#d4d0c8",
+                    border: "1px solid #808080",
+                    padding: "1px 4px",
+                    fontSize: "9px",
+                    color: "#0000ff",
+                    textDecoration: "underline",
+                  }}
+                  target="_blank"
+                >
+                  Docs ↗
+                </a>
+              ) : null}
+            </span>
+          </div>
+          <p style={{ fontSize: "10px", color: "#444444", lineHeight: "1.4" }}>{hit.description}</p>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 }
 
@@ -137,55 +169,65 @@ export function ToolbaseSearch({ preview }: { preview: Product[] }) {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
+    <div className="win-inset-panel" style={{ padding: "12px", background: "#d4d0c8" }}>
+      <div className="win-title-bar" style={{ marginBottom: "10px" }}>
+        <span>🔍</span>
+        <span>Search the Catalog</span>
+      </div>
+
       {/* Search form */}
       <form
-        className="flex flex-col gap-3 sm:flex-row sm:items-center"
+        style={{ display: "flex", gap: "6px", marginBottom: "10px", alignItems: "center" }}
         onSubmit={onSubmit}
       >
-        <Input
-          aria-label="Search tools"
-          autoComplete="off"
-          className="h-11 flex-1 rounded-2xl border-border bg-background text-base"
-          name="q"
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="e.g. auth, email, database…"
-          value={query}
-        />
-        <Button
-          className="h-11 w-28 shrink-0 rounded-2xl"
+        <div style={{ display: "flex", flexDirection: "column", flex: 1, gap: "2px" }}>
+          <label htmlFor="win-search-input" style={{ fontSize: "11px", color: "#000000" }}>
+            Search:
+          </label>
+          <input
+            aria-label="Search tools"
+            autoComplete="off"
+            className="win-input"
+            id="win-search-input"
+            name="q"
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="e.g. auth, email, database…"
+            style={{ width: "100%", height: "22px" }}
+            value={query}
+          />
+        </div>
+        <button
+          className="win-button"
           disabled={pending}
+          style={{ marginTop: "16px", minWidth: "80px" }}
           type="submit"
         >
-          {pending ? <Spinner className="size-4" /> : "Search"}
-        </Button>
+          {pending ? "Searching..." : "Search"}
+        </button>
       </form>
 
-      {/* Suggestions + back — always rendered to prevent layout shift */}
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          aria-hidden={results === null}
-          className={cn(
-            "mr-1 text-muted-foreground text-xs underline decoration-muted-foreground/40 underline-offset-2 transition-opacity hover:text-foreground",
-            results === null
-              ? "pointer-events-none opacity-0"
-              : "pointer-events-auto opacity-100"
-          )}
-          onClick={() => setResults(null)}
-          tabIndex={results === null ? -1 : 0}
-          type="button"
-        >
-          ← Back
-        </button>
-        <span className="font-medium text-muted-foreground text-xs">Try:</span>
+      {/* Suggestions */}
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "4px", marginBottom: "10px" }}>
+        {results !== null && (
+          <button
+            className="win-button"
+            onClick={() => setResults(null)}
+            style={{ fontSize: "10px", minWidth: "50px", padding: "2px 8px" }}
+            type="button"
+          >
+            ← Back
+          </button>
+        )}
+        <span style={{ fontSize: "10px", color: "#444444" }}>Try:</span>
         {SUGGESTIONS.map((s) => (
           <button
-            className="rounded-full border border-border bg-background px-3 py-1 text-foreground text-xs transition-colors hover:bg-muted/70"
+            className="win-button"
             key={s}
             onClick={() => {
               setQuery(s);
               runSearch(s);
             }}
+            style={{ fontSize: "10px", padding: "1px 6px", minWidth: "auto" }}
             type="button"
           >
             {s}
@@ -194,13 +236,8 @@ export function ToolbaseSearch({ preview }: { preview: Product[] }) {
       </div>
 
       {/* Results */}
-      <div
-        className={cn(
-          "transition-opacity duration-150",
-          pending && "opacity-50"
-        )}
-      >
-        <SearchResults preview={preview} results={results} />
+      <div style={{ opacity: pending ? 0.5 : 1 }}>
+        <SearchResults pending={pending} preview={preview} results={results} />
       </div>
     </div>
   );

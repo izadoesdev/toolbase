@@ -1,21 +1,9 @@
 import type { Metadata } from "next";
-import { DM_Sans, Geist_Mono, Newsreader } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { cn } from "@/lib/utils";
 import "./globals.css";
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-const newsreader = Newsreader({
-  subsets: ["latin"],
-  variable: "--font-display",
-  display: "swap",
-});
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -38,15 +26,11 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      className={cn(
-        "h-full scroll-smooth antialiased",
-        dmSans.variable,
-        newsreader.variable,
-        geistMono.variable
-      )}
+      className={cn("h-full scroll-smooth", geistMono.variable)}
       lang="en"
+      style={{ fontFamily: "'Tahoma', 'MS Sans Serif', Arial, sans-serif" }}
     >
-      <body className="flex min-h-full flex-col bg-background font-sans text-foreground">
+      <body className="flex min-h-full flex-col bg-background text-foreground" style={{ fontFamily: "'Tahoma', 'MS Sans Serif', Arial, sans-serif", fontSize: '11px' }}>
         <SiteHeader />
         <div className="flex flex-1 flex-col">{children}</div>
         <SiteFooter />

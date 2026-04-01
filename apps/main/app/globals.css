@@ -48,82 +48,65 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ─── Windows 2000 / Classic UI Theme ─── */
 :root {
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.488 0.243 264.376);
-  --primary-foreground: oklch(0.97 0.014 254.604);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.845 0.143 164.978);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.596 0.145 163.225);
-  --chart-4: oklch(0.508 0.118 165.612);
-  --chart-5: oklch(0.432 0.095 166.913);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.546 0.245 262.881);
-  --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-}
+  /* Classic Windows silver/grey palette */
+  --win-silver: #d4d0c8;
+  --win-dark-border: #808080;
+  --win-light-border: #ffffff;
+  --win-shadow: #404040;
+  --win-blue-title: #0a246a;
+  --win-blue-title-end: #a6b4d0;
+  --win-blue-btn: #1e3c78;
+  --win-blue-active: #316ac5;
+  --win-text: #000000;
+  --win-desktop: #008080;
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.424 0.199 265.638);
-  --primary-foreground: oklch(0.97 0.014 254.604);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.845 0.143 164.978);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.596 0.145 163.225);
-  --chart-4: oklch(0.508 0.118 165.612);
-  --chart-5: oklch(0.432 0.095 166.913);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.623 0.214 259.815);
-  --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* shadcn token overrides — Windows Classic */
+  --background: #d4d0c8;
+  --foreground: #000000;
+  --card: #d4d0c8;
+  --card-foreground: #000000;
+  --popover: #d4d0c8;
+  --popover-foreground: #000000;
+  --primary: #1e3c78;
+  --primary-foreground: #ffffff;
+  --secondary: #ece9d8;
+  --secondary-foreground: #000000;
+  --muted: #ece9d8;
+  --muted-foreground: #444444;
+  --accent: #316ac5;
+  --accent-foreground: #ffffff;
+  --destructive: #cc0000;
+  --border: #808080;
+  --input: #ffffff;
+  --ring: #316ac5;
+  --chart-1: #316ac5;
+  --chart-2: #008080;
+  --chart-3: #800080;
+  --chart-4: #808000;
+  --chart-5: #008000;
+  --radius: 0px;
+  --sidebar: #d4d0c8;
+  --sidebar-foreground: #000000;
+  --sidebar-primary: #1e3c78;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ece9d8;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: #808080;
+  --sidebar-ring: #316ac5;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    box-sizing: border-box;
   }
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Tahoma', 'MS Sans Serif', Arial, sans-serif;
+    font-size: 11px;
   }
 
   html {
@@ -133,6 +116,138 @@
 
 @layer utilities {
   .font-display {
-    font-family: var(--font-display), ui-serif, Georgia, serif;
+    font-family: 'Tahoma', 'MS Sans Serif', Arial, sans-serif;
+    font-weight: bold;
+  }
+
+  /* Classic raised / "3D" bevel effect */
+  .win-raised {
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+    box-shadow: 1px 1px 0 #404040;
+  }
+
+  .win-sunken {
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+  }
+
+  .win-button {
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #404040;
+    border-bottom: 2px solid #404040;
+    background: #d4d0c8;
+    color: #000000;
+    font-family: 'Tahoma', Arial, sans-serif;
+    font-size: 11px;
+    padding: 3px 12px;
+    cursor: pointer;
+    min-width: 75px;
+  }
+
+  .win-button:active {
+    border-top: 2px solid #404040;
+    border-left: 2px solid #404040;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    padding: 4px 11px 2px 13px;
+  }
+
+  .win-input {
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #d4d0c8;
+    border-bottom: 2px solid #d4d0c8;
+    background: #ffffff;
+    color: #000000;
+    font-family: 'Tahoma', Arial, sans-serif;
+    font-size: 11px;
+    padding: 2px 4px;
+  }
+
+  .win-panel {
+    background: #d4d0c8;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+  }
+
+  .win-inset-panel {
+    background: #d4d0c8;
+    border-top: 1px solid #808080;
+    border-left: 1px solid #808080;
+    border-right: 1px solid #ffffff;
+    border-bottom: 1px solid #ffffff;
+  }
+
+  .win-title-bar {
+    background: linear-gradient(90deg, #0a246a 0%, #a6b4d0 100%);
+    color: #ffffff;
+    font-family: 'Tahoma', Arial, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .win-groupbox {
+    border: 1px solid #808080;
+    box-shadow: 1px 1px 0 #ffffff;
+    padding: 16px 12px 12px;
+    position: relative;
+    margin-top: 8px;
+  }
+
+  .win-groupbox-label {
+    position: absolute;
+    top: -8px;
+    left: 8px;
+    background: #d4d0c8;
+    padding: 0 4px;
+    font-family: 'Tahoma', Arial, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+  }
+
+  .win-listbox {
+    background: #ffffff;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #d4d0c8;
+    border-bottom: 2px solid #d4d0c8;
+  }
+
+  .win-listbox-item:hover {
+    background: #316ac5;
+    color: #ffffff;
+  }
+
+  .win-statusbar {
+    background: #d4d0c8;
+    border-top: 1px solid #808080;
+    font-family: 'Tahoma', Arial, sans-serif;
+    font-size: 11px;
+  }
+
+  .win-link {
+    color: #0000ff;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .win-link:hover {
+    color: #ff0000;
+  }
+
+  .win-desktop-bg {
+    background: #008080;
   }
 }
