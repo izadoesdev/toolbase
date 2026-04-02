@@ -1,0 +1,60 @@
+<h2>How long should the page be?</h2>
+<p class="subtitle">Audience knows MCP. They just need to understand what Toolbase adds. How much does the page need to say?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>One screen — pure activation</h3>
+      <p>Everything visible without scrolling. Headline + agent simulation + config snippet + one-liner on what tools the agent gets. That's it.</p>
+      <div style="margin-top:10px;border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:10px">
+        <div style="background:var(--surface-2);padding:6px 10px;color:var(--text-3);border-bottom:1px solid var(--border)">above the fold</div>
+        <div style="padding:8px 10px;display:flex;flex-direction:column;gap:4px">
+          <div style="background:var(--surface-3);border-radius:4px;padding:5px 8px;color:var(--text-2)">Headline</div>
+          <div style="background:#0d0d0d;border-radius:4px;padding:5px 8px;color:#666;font-family:monospace">agent simulation</div>
+          <div style="background:var(--surface-3);border-radius:4px;padding:5px 8px;color:var(--text-2);font-family:monospace">config snippet + copy button</div>
+        </div>
+        <div style="background:var(--surface-2);padding:6px 10px;color:var(--text-3);border-top:1px solid var(--border)">footer</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Short scroll — what the agent gets</h3>
+      <p>Hero + config, then a brief "what your agent can do" section with the 3 verbs (search, review, report), then footer. Still short — maybe 2 screens total.</p>
+      <div style="margin-top:10px;border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:10px">
+        <div style="background:var(--surface-2);padding:6px 10px;color:var(--text-3);border-bottom:1px solid var(--border)">screen 1</div>
+        <div style="padding:8px 10px;display:flex;flex-direction:column;gap:4px">
+          <div style="background:#0d0d0d;border-radius:4px;padding:5px 8px;color:#666;font-family:monospace">agent simulation</div>
+          <div style="background:var(--surface-3);border-radius:4px;padding:5px 8px;color:var(--text-2);font-family:monospace">config snippet</div>
+        </div>
+        <div style="background:var(--surface-2);padding:6px 10px;color:var(--text-3);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">screen 2</div>
+        <div style="padding:8px 10px;display:flex;gap:4px">
+          <div style="flex:1;background:var(--surface-3);border-radius:4px;padding:5px 8px;color:var(--text-2);text-align:center">search</div>
+          <div style="flex:1;background:var(--surface-3);border-radius:4px;padding:5px 8px;color:var(--text-2);text-align:center">review</div>
+          <div style="flex:1;background:var(--surface-3);border-radius:4px;padding:5px 8px;color:var(--text-2);text-align:center">report</div>
+        </div>
+        <div style="background:var(--surface-2);padding:6px 10px;color:var(--text-3);border-top:1px solid var(--border)">footer</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Medium — adds the flywheel story</h3>
+      <p>B + a section that explains the compounding value: "every agent that uses Toolbase makes it smarter for the next one." Justifies the catalog as a network, not just a static list.</p>
+      <div style="margin-top:10px;border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:10px">
+        <div style="padding:8px 10px;display:flex;flex-direction:column;gap:4px">
+          <div style="background:#0d0d0d;border-radius:4px;padding:5px 8px;color:#666;font-family:monospace">agent simulation</div>
+          <div style="background:var(--surface-3);border-radius:4px;padding:5px 8px;color:var(--text-2);font-family:monospace">config snippet</div>
+          <div style="background:var(--surface-3);border-radius:4px;padding:5px 8px;color:var(--text-2)">search · review · report</div>
+          <div style="background:var(--surface-2);border-radius:4px;padding:5px 8px;color:var(--text-3);border:1px dashed var(--border)">flywheel: catalog grows smarter over time</div>
+        </div>
+        <div style="background:var(--surface-2);padding:6px 10px;color:var(--text-3);border-top:1px solid var(--border)">footer</div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,366 @@
+<h2>Admin UI — Two-screen design</h2>
+<p class="subtitle">
+  Queue list (top) → per-item detail page (below). Click to select if this looks
+  right.
+</p>
+
+<div class="section">
+  <h3>Screen 1 — Queue list <code>/admin</code></h3>
+  <div class="mockup">
+    <div class="mockup-header">Admin · Review Queue</div>
+    <div class="mockup-body" style="padding:0">
+      <!-- Filter bar -->
+      <div
+        style="display:flex;gap:8px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;"
+      >
+        <span style="font-size:11px;color:var(--muted);margin-right:4px;"
+          >Type</span
+        >
+        <button
+          style="padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--accent,#3b82f6);color:#fff;font-size:11px;cursor:pointer;"
+        >
+          All
+        </button>
+        <button
+          style="padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:11px;cursor:pointer;color:var(--muted);"
+        >
+          New
+        </button>
+        <button
+          style="padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:11px;cursor:pointer;color:var(--muted);"
+        >
+          Update
+        </button>
+        <button
+          style="padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:11px;cursor:pointer;color:var(--muted);"
+        >
+          Conflict
+        </button>
+        <div
+          style="width:1px;height:16px;background:var(--border);margin:0 4px;"
+        ></div>
+        <span style="font-size:11px;color:var(--muted);">Risk</span>
+        <button
+          style="padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:11px;cursor:pointer;color:var(--muted);"
+        >
+          Low
+        </button>
+        <button
+          style="padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:11px;cursor:pointer;color:var(--muted);"
+        >
+          Medium
+        </button>
+        <button
+          style="padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:11px;cursor:pointer;color:var(--muted);"
+        >
+          High
+        </button>
+      </div>
+
+      <!-- Items -->
+      <div style="divide-y:1px solid var(--border)">
+        <!-- CONFLICT item -->
+        <div
+          style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);"
+        >
+          <span
+            style="background:#ef444420;color:#ef4444;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap;"
+            >CONFLICT</span
+          >
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:500;">
+              Stripe
+              <span
+                style="font-size:11px;color:var(--muted);font-weight:400;font-family:monospace;"
+                >stripe</span
+              >
+            </div>
+            <div style="font-size:11px;color:var(--muted);">
+              2 conflicting fields · 2 submitters
+            </div>
+          </div>
+          <span
+            style="background:#ef444420;color:#ef4444;padding:2px 8px;border-radius:4px;font-size:10px;"
+            >high</span
+          >
+          <span style="font-size:11px;color:var(--muted);">Apr 1</span>
+          <span style="color:#3b82f6;font-size:12px;white-space:nowrap;"
+            >Review →</span
+          >
+        </div>
+
+        <!-- UPDATE item -->
+        <div
+          style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);"
+        >
+          <span
+            style="background:#3b82f620;color:#3b82f6;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap;"
+            >UPDATE</span
+          >
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:500;">
+              Databuddy
+              <span
+                style="font-size:11px;color:var(--muted);font-weight:400;font-family:monospace;"
+                >databuddy</span
+              >
+            </div>
+            <div style="font-size:11px;color:var(--muted);">
+              +6 fields added · 3 votes
+            </div>
+          </div>
+          <span
+            style="background:#f59e0b20;color:#f59e0b;padding:2px 8px;border-radius:4px;font-size:10px;"
+            >medium</span
+          >
+          <span style="font-size:11px;color:var(--muted);">Apr 2</span>
+          <span style="color:#3b82f6;font-size:12px;white-space:nowrap;"
+            >Review →</span
+          >
+        </div>
+
+        <!-- NEW item -->
+        <div
+          style="display:flex;align-items:center;gap:12px;padding:12px 16px;"
+        >
+          <span
+            style="background:#10b98120;color:#10b981;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap;"
+            >NEW</span
+          >
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:500;">
+              Resend
+              <span
+                style="font-size:11px;color:var(--muted);font-weight:400;font-family:monospace;"
+                >resend</span
+              >
+            </div>
+            <div style="font-size:11px;color:var(--muted);">
+              New product submission
+            </div>
+          </div>
+          <span
+            style="background:#6b728020;color:#6b7280;padding:2px 8px;border-radius:4px;font-size:10px;"
+            >low</span
+          >
+          <span style="font-size:11px;color:var(--muted);">Apr 2</span>
+          <span style="color:#3b82f6;font-size:12px;white-space:nowrap;"
+            >Review →</span
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>
+    Screen 2 — Detail page (UPDATE with conflict) <code>/admin/[id]</code>
+  </h3>
+  <div class="mockup">
+    <div class="mockup-header">
+      ← Back to queue &nbsp;·&nbsp; Databuddy &nbsp;<span
+        style="background:#3b82f620;color:#3b82f6;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:700;"
+        >UPDATE</span
+      >&nbsp;<span
+        style="background:#f59e0b20;color:#f59e0b;padding:1px 7px;border-radius:4px;font-size:11px;"
+        >medium risk</span
+      >
+    </div>
+    <div class="mockup-body">
+      <!-- Meta row -->
+      <div
+        style="display:flex;gap:24px;font-size:12px;color:var(--muted);margin-bottom:16px;flex-wrap:wrap;"
+      >
+        <span>3 votes &nbsp;·&nbsp; 2 submitters</span>
+        <span>First proposed: Apr 1, 2026</span>
+        <span>Last updated: Apr 2, 2026</span>
+        <span>Submitted by: claude-sonnet-4-6</span>
+      </div>
+
+      <!-- Submitter notes -->
+      <div
+        style="background:#3b82f610;border:1px solid #3b82f630;border-radius:6px;padding:10px 12px;font-size:12px;color:var(--muted);margin-bottom:16px;"
+      >
+        <span
+          style="font-size:10px;font-weight:700;color:#3b82f6;text-transform:uppercase;letter-spacing:.5px;"
+          >Submitter notes</span
+        ><br>
+        "Comprehensive enrichment from official llms.txt and SDK docs: tagline,
+        use cases, maturity, pricing details, correct API base URLs..."
+      </div>
+
+      <!-- Diff summary -->
+      <div style="margin-bottom:16px;">
+        <div
+          style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px;"
+        >
+          Changes
+        </div>
+
+        <div
+          style="border:1px solid var(--border);border-radius:8px;overflow:hidden;font-size:12px;"
+        >
+          <!-- Added fields -->
+          <div
+            style="padding:8px 12px;background:#10b98108;border-bottom:1px solid var(--border);"
+          >
+            <span style="color:#10b981;font-weight:600;font-size:11px;"
+              >+ tagline</span
+            >
+            <span style="color:var(--muted);margin-left:8px;"
+              >"Privacy-first analytics. One script, no cookies, no banners."</span
+            >
+          </div>
+          <div
+            style="padding:8px 12px;background:#10b98108;border-bottom:1px solid var(--border);"
+          >
+            <span style="color:#10b981;font-weight:600;font-size:11px;"
+              >+ maturity</span
+            >
+            <span style="color:var(--muted);margin-left:8px;">ga</span>
+          </div>
+          <div
+            style="padding:8px 12px;background:#10b98108;border-bottom:1px solid var(--border);"
+          >
+            <span style="color:#10b981;font-weight:600;font-size:11px;"
+              >+ use_cases</span
+            >
+            <span style="color:var(--muted);margin-left:8px;"
+              >6 entries added</span
+            >
+          </div>
+          <div
+            style="padding:8px 12px;background:#10b98108;border-bottom:1px solid var(--border);"
+          >
+            <span style="color:#10b981;font-weight:600;font-size:11px;"
+              >+ sdks</span
+            >
+            <span style="color:var(--muted);margin-left:8px;"
+              >npm:@databuddy/sdk (typescript, javascript)</span
+            >
+          </div>
+          <div
+            style="padding:8px 12px;background:#10b98108;border-bottom:1px solid var(--border);"
+          >
+            <span style="color:#10b981;font-weight:600;font-size:11px;"
+              >+ auth.key_env_var</span
+            >
+            <span style="color:var(--muted);margin-left:8px;"
+              >DATABUDDY_API_KEY</span
+            >
+          </div>
+
+          <!-- Changed field -->
+          <div
+            style="padding:8px 12px;background:#3b82f608;border-bottom:1px solid var(--border);"
+          >
+            <span style="color:#3b82f6;font-weight:600;font-size:11px;"
+              >~ api.base_url</span
+            >
+            <span
+              style="color:var(--muted);margin-left:8px;text-decoration:line-through;"
+              >https://databuddy.cc</span
+            >
+            <span style="color:var(--text);margin-left:8px;"
+              >→ https://api.databuddy.cc/v1</span
+            >
+          </div>
+
+          <!-- CONFLICT field -->
+          <div
+            style="padding:8px 12px;background:#f59e0b08;border-bottom:1px solid var(--border);"
+          >
+            <div
+              style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"
+            >
+              <span style="color:#f59e0b;font-weight:600;font-size:11px;"
+                >⚠ pricing.starting_price</span
+              >
+              <span
+                style="background:#f59e0b20;color:#f59e0b;padding:1px 6px;border-radius:3px;font-size:10px;"
+                >conflict</span
+              >
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button
+                style="flex:1;padding:5px 10px;border-radius:5px;border:2px solid #10b981;background:#10b98110;color:#10b981;font-size:11px;cursor:pointer;"
+              >
+                Keep current: $0
+              </button>
+              <button
+                style="flex:1;padding:5px 10px;border-radius:5px;border:1px solid var(--border);background:transparent;font-size:11px;cursor:pointer;color:var(--muted);"
+              >
+                Use proposed: $9
+              </button>
+            </div>
+          </div>
+
+          <!-- Another CONFLICT field -->
+          <div style="padding:8px 12px;background:#f59e0b08;">
+            <div
+              style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"
+            >
+              <span style="color:#f59e0b;font-weight:600;font-size:11px;"
+                >⚠ pricing.model</span
+              >
+              <span
+                style="background:#f59e0b20;color:#f59e0b;padding:1px 6px;border-radius:3px;font-size:10px;"
+                >conflict</span
+              >
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button
+                style="flex:1;padding:5px 10px;border-radius:5px;border:1px solid var(--border);background:transparent;font-size:11px;cursor:pointer;color:var(--muted);"
+              >
+                Keep current: freemium
+              </button>
+              <button
+                style="flex:1;padding:5px 10px;border-radius:5px;border:2px solid #3b82f6;background:#3b82f610;color:#3b82f6;font-size:11px;cursor:pointer;"
+              >
+                Use proposed: paid
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div
+        style="display:flex;gap:10px;padding-top:8px;border-top:1px solid var(--border);"
+      >
+        <button
+          style="padding:7px 20px;background:#10b981;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;"
+        >
+          Approve
+        </button>
+        <button
+          style="padding:7px 20px;background:transparent;color:#ef4444;border:1px solid #ef4444;border-radius:6px;font-size:13px;cursor:pointer;"
+        >
+          Reject
+        </button>
+        <a
+          style="margin-left:auto;padding:7px 14px;color:var(--muted);font-size:12px;text-decoration:none;display:flex;align-items:center;"
+          >View full product JSON ↗</a
+        >
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="options" style="margin-top:8px;">
+  <div class="option" data-choice="looks-good" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content">
+      <h3>Looks good — proceed</h3>
+      <p>This is the design I want. Build it.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="changes" onclick="toggleSelect(this)">
+    <div class="letter">✎</div>
+    <div class="content">
+      <h3>Changes needed</h3>
+      <p>I'll describe what to adjust in the terminal.</p>
+    </div>
+  </div>
+</div>

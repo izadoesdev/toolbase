@@ -10,7 +10,6 @@ interface FooterLink {
 const FOOTER_LINKS: Record<string, FooterLink[]> = {
   Product: [
     { href: "/#registry", label: "Browse catalog" },
-    { href: "/#how-it-works", label: "How it works" },
   ],
   Developers: [
     { href: "/api/mcp", label: "MCP endpoint" },
@@ -84,7 +83,7 @@ export function SiteFooter() {
             agents.
           </p>
           <p className="font-mono text-muted-foreground text-xs">
-            v0.3.0 · MCP Streamable HTTP
+            v0.5.0 · MCP Streamable HTTP
           </p>
         </div>
       </div>

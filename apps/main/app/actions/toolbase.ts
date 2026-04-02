@@ -2,11 +2,11 @@
 
 import { searchProducts } from "@/lib/toolbase/registry";
 
-// biome-ignore lint/suspicious/useAwait: Next.js Server Actions must be async
-export async function searchToolbase(query: string) {
+export async function searchToolbase(query: string, category?: string) {
   const q = query.trim();
   if (!q) {
-    return { results: [] as ReturnType<typeof searchProducts> };
+    return { results: [] as Awaited<ReturnType<typeof searchProducts>> };
   }
-  return { results: searchProducts(q) };
+  const filters = category && category !== "all" ? { category } : undefined;
+  return { results: await searchProducts(q, filters) };
 }

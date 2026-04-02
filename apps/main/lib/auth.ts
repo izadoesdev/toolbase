@@ -9,7 +9,13 @@ import * as schema from "./db/schema";
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
-  secret: process.env.BETTER_AUTH_SECRET ?? "",
+  secret: (() => {
+    const s = process.env.BETTER_AUTH_SECRET;
+    if (!s) {
+      throw new Error("BETTER_AUTH_SECRET is not set");
+    }
+    return s;
+  })(),
   database: drizzleAdapter(db, {
     provider: "pg",
     schema,
@@ -40,7 +46,7 @@ export const auth = betterAuth({
     bearer(),
     nextCookies(),
     apiKey({
-      defaultPrefix: "tb_",
+      defaultPrefix: "toolbase_",
       // MCP keys need high limits — override the terrible 10/day default
       rateLimit: {
         maxRequests: 10_000,

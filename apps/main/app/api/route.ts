@@ -1,7 +1,7 @@
 export function GET() {
   return Response.json({
     service: "toolbase",
-    version: "0.3.0",
+    version: "0.5.0",
     endpoints: {
       mcp: "GET POST /api/mcp  (MCP Streamable HTTP)",
       info: "GET /api",
@@ -10,11 +10,16 @@ export function GET() {
       read: [
         "toolbase_search",
         "toolbase_get",
-        "toolbase_list",
+        "toolbase_related",
         "toolbase_get_reviews",
         "toolbase_get_bugs",
       ],
-      write: ["toolbase_review", "toolbase_bug_report", "toolbase_create"],
+      write: [
+        "toolbase_review",
+        "toolbase_bug_report",
+        "toolbase_create",
+        "toolbase_update",
+      ],
     },
   });
 }

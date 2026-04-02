@@ -1,0 +1,168 @@
+<h2>Admin UI — Layout approach</h2>
+<p class="subtitle">
+  Three ways to organise the review queue. Each handles the new/update
+  distinction and diff view differently.
+</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Expandable cards</h3>
+      <p>
+        Single-page queue. Each card shows type badge (NEW · UPDATE · CONFLICT),
+        risk level, and vote count inline. Clicking a card expands it in-place
+        to reveal the full detail and diff. No navigation needed.
+      </p>
+      <div
+        style="margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;line-height:1.8;"
+      >
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
+          <span
+            style="background:#3b82f620;color:#3b82f6;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;"
+            >UPDATE</span
+          >
+          <strong>Databuddy</strong>
+          <span
+            style="background:#f59e0b20;color:#f59e0b;padding:2px 7px;border-radius:4px;font-size:11px;"
+            >medium risk</span
+          >
+          <span style="color:var(--muted);margin-left:auto;">3 votes</span>
+        </div>
+        <div style="color:var(--muted);font-size:11px;">
+          +tagline, +use_cases, +sdks ← click to expand diff ▾
+        </div>
+        <div
+          style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px;color:var(--muted);font-size:11px;font-style:italic;"
+        >
+          ↳ diff + full data shown inline on expand
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Master-detail (recommended)</h3>
+      <p>
+        Left panel = compact queue list with type + risk badges. Right panel =
+        full review experience for the selected item — diff view, all fields,
+        conflicts highlighted, submitter info. Fast to scan, rich to review.
+      </p>
+      <div
+        style="margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;font-size:12px;"
+      >
+        <div style="display:flex;min-height:90px;">
+          <div
+            style="width:38%;border-right:1px solid var(--border);padding:8px;display:flex;flex-direction:column;gap:6px;"
+          >
+            <div
+              style="display:flex;gap:6px;align-items:center;padding:4px 6px;background:var(--accent,#3b82f615);border-radius:4px;"
+            >
+              <span
+                style="background:#3b82f620;color:#3b82f6;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:600;"
+                >UPD</span
+              >
+              <span style="font-size:11px;font-weight:500;">Databuddy</span>
+              <span
+                style="margin-left:auto;background:#f59e0b20;color:#f59e0b;padding:1px 5px;border-radius:3px;font-size:10px;"
+                >med</span
+              >
+            </div>
+            <div
+              style="display:flex;gap:6px;align-items:center;padding:4px 6px;"
+            >
+              <span
+                style="background:#10b98120;color:#10b981;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:600;"
+                >NEW</span
+              >
+              <span style="font-size:11px;color:var(--muted);">Resend</span>
+              <span
+                style="margin-left:auto;background:#6b728020;color:#6b7280;padding:1px 5px;border-radius:3px;font-size:10px;"
+                >low</span
+              >
+            </div>
+            <div
+              style="display:flex;gap:6px;align-items:center;padding:4px 6px;"
+            >
+              <span
+                style="background:#ef444420;color:#ef4444;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:600;"
+                >CONFLICT</span
+              >
+              <span style="font-size:11px;color:var(--muted);">Stripe</span>
+              <span
+                style="margin-left:auto;background:#ef444420;color:#ef4444;padding:1px 5px;border-radius:3px;font-size:10px;"
+                >high</span
+              >
+            </div>
+          </div>
+          <div
+            style="flex:1;padding:10px;font-size:11px;color:var(--muted);line-height:1.7;"
+          >
+            <div style="color:var(--text);font-weight:600;margin-bottom:4px;">
+              Databuddy · update proposal
+            </div>
+            <div style="color:#10b981;font-size:10px;">+ tagline</div>
+            <div style="color:#10b981;font-size:10px;">
+              + use_cases (6 entries)
+            </div>
+            <div style="color:#3b82f6;font-size:10px;">
+              ~ pricing.pricing_url
+            </div>
+            <div style="margin-top:6px;font-style:italic;">
+              3 submitters · 2 votes
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Per-item detail pages</h3>
+      <p>
+        Queue is a list. Each item links to <code>/admin/[id]</code> — a
+        full-page review with diff, raw JSON, conflict resolution, and
+        approve/reject. Back button returns to queue. Most room for complex UX,
+        but requires navigation per review.
+      </p>
+      <div
+        style="margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;"
+      >
+        <div style="color:var(--muted);font-size:11px;margin-bottom:6px;">
+          Queue page
+        </div>
+        <div
+          style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);"
+        >
+          <span
+            ><span
+              style="background:#3b82f620;color:#3b82f6;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:600;margin-right:6px;"
+              >UPD</span
+            >Databuddy</span
+          >
+          <span style="color:#3b82f6;font-size:11px;">Review →</span>
+        </div>
+        <div
+          style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;"
+        >
+          <span
+            ><span
+              style="background:#10b98120;color:#10b981;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:600;margin-right:6px;"
+              >NEW</span
+            >Resend</span
+          >
+          <span style="color:#3b82f6;font-size:11px;">Review →</span>
+        </div>
+        <div
+          style="color:var(--muted);font-size:11px;margin-top:8px;font-style:italic;"
+        >
+          → each opens full /admin/[id] page with diff, JSON, actions
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

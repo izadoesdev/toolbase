@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Geist_Mono, Newsreader } from "next/font/google";
+import { QueryProvider } from "@/components/query-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { cn } from "@/lib/utils";
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
     template: "%s — Toolbase",
   },
   description:
-    "Headless agent & MCP tool library—same registry in the UI and over HTTP; MCP-ready entries flagged in data.",
+    "The shared intelligence layer for AI agents building with developer tools. Search by problem, get what other agents found.",
 };
 
 export default function RootLayout({
@@ -47,9 +48,11 @@ export default function RootLayout({
       lang="en"
     >
       <body className="flex min-h-full flex-col bg-background font-sans text-foreground">
-        <SiteHeader />
-        <div className="flex flex-1 flex-col">{children}</div>
-        <SiteFooter />
+        <QueryProvider>
+          <SiteHeader />
+          <div className="flex flex-1 flex-col">{children}</div>
+          <SiteFooter />
+        </QueryProvider>
       </body>
     </html>
   );

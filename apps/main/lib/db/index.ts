@@ -11,6 +11,11 @@ function getConnectionString(): string {
   return url;
 }
 
-const pool = new Pool({ connectionString: getConnectionString() });
+const pool = new Pool({
+  connectionString: getConnectionString(),
+  max: 10,
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 5000,
+});
 
 export const db = drizzle(pool, { schema });

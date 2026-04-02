@@ -24,8 +24,8 @@ function isOriginAllowed(origin: string | null): boolean {
     return (
       hostname === "localhost" ||
       hostname === "127.0.0.1" ||
-      hostname === "toolbase.dev" ||
-      hostname.endsWith(".toolbase.dev")
+      hostname === "toolbase.sh" ||
+      hostname.endsWith(".toolbase.sh")
     );
   } catch {
     return false;

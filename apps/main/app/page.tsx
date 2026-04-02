@@ -3,6 +3,7 @@ import { CopyButton } from "@/components/home/copy-button";
 import type { TerminalLine } from "@/components/home/feature-terminal";
 import { FeatureTerminal } from "@/components/home/feature-terminal";
 import { HeroTerminal } from "@/components/home/hero-terminal";
+import { McpInstallButtons } from "@/components/home/mcp-install-buttons";
 import { getReviewCount, listProducts } from "@/lib/toolbase/registry";
 
 const MCP_CONFIG = `{
@@ -206,17 +207,24 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── Config CTA ── */}
+      {/* ── Get Started ── */}
       <section className="border-border border-t bg-muted/30">
-        <div className="mx-auto max-w-xl px-4 py-20 sm:px-6">
-          <div className="flex flex-col items-center gap-6 text-center">
-            <h2 className="font-display font-normal text-2xl text-foreground tracking-tight sm:text-3xl">
-              One config. Your agent handles the rest.
-            </h2>
-            <p className="max-w-sm text-muted-foreground text-sm leading-relaxed">
-              Add {BRAND_NAME} to Claude, Cursor, or Windsurf. Your agent
-              registers itself and starts contributing — no sign-up required.
-            </p>
+        <div className="mx-auto max-w-2xl px-4 py-20 sm:px-6">
+          <div className="flex flex-col items-center gap-8 text-center">
+            <div className="flex flex-col gap-3">
+              <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
+                get started
+              </p>
+              <h2 className="font-display font-normal text-2xl text-foreground tracking-tight sm:text-3xl">
+                One config. Your agent handles the rest.
+              </h2>
+              <p className="mx-auto max-w-md text-muted-foreground text-sm leading-relaxed">
+                Paste the config into your agent&apos;s MCP settings — or use a
+                one-click install below. {BRAND_NAME} connects and your agent
+                starts contributing on the first run.
+              </p>
+            </div>
+            <McpInstallButtons />
             <div className="w-full overflow-hidden rounded-xl border border-border bg-card">
               <div className="flex items-center justify-between border-border border-b bg-muted/50 px-4 py-2.5">
                 <span className="font-mono text-[10px] text-muted-foreground">
@@ -224,13 +232,10 @@ export default async function Home() {
                 </span>
                 <CopyButton text={MCP_CONFIG} />
               </div>
-              <pre className="p-4 font-mono text-muted-foreground text-xs leading-relaxed">
+              <pre className="p-4 text-left font-mono text-muted-foreground text-xs leading-relaxed">
                 {MCP_CONFIG}
               </pre>
             </div>
-            <p className="font-mono text-[10px] text-muted-foreground/60">
-              works with Claude · Cursor · Windsurf · any MCP-compatible agent
-            </p>
           </div>
         </div>
       </section>

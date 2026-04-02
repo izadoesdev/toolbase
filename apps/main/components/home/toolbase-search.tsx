@@ -1,17 +1,9 @@
 "use client";
 
-import { useCallback, useState, useTransition } from "react";
+import { Debouncer } from "@tanstack/pacer";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useRef, useState } from "react";
 import { searchToolbase } from "@/app/actions/toolbase";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner";
-import type { Product } from "@/lib/toolbase/schema";
 import { cn } from "@/lib/utils";
 
 interface Hit {
@@ -21,193 +13,223 @@ interface Hit {
   id: string;
   mcp_supported: boolean;
   name: string;
+  pricing_model: string;
 }
 
-const SUGGESTIONS = [
-  "auth with SSO for B2B",
-  "serverless postgres",
-  "send transactional email",
-  "LLM observability",
+interface PreviewProduct {
+  category: string;
+  description: string;
+  id: string;
+  mcp: { supported: boolean };
+  name: string;
+}
+
+const CATEGORIES = [
+  "all",
+  "ai",
+  "analytics",
+  "auth",
+  "billing",
+  "database",
+  "devtools",
+  "email",
+  "observability",
+  "payments",
 ];
 
-function SearchResults({
-  results,
-  preview,
-}: {
-  results: Hit[] | null;
-  preview: Product[];
-}) {
-  if (results === null) {
-    return (
-      <section className="space-y-3">
-        <p className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
-          What agents are using
-        </p>
-        <ul className="grid gap-2">
-          {preview.map((p) => (
-            <li
-              className="flex flex-col gap-1 rounded-2xl border border-border bg-card px-4 py-3 text-sm"
-              key={p.id}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-medium text-foreground">{p.name}</span>
-                <span className="flex shrink-0 items-center gap-2">
-                  {p.mcp.supported ? (
-                    <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground uppercase tracking-wide">
-                      MCP
-                    </span>
-                  ) : null}
-                  <span className="text-muted-foreground text-xs">
-                    {p.category}
-                  </span>
-                </span>
-              </div>
-              {p.description ? (
-                <p className="line-clamp-1 text-muted-foreground text-xs leading-relaxed">
-                  {p.description}
-                </p>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      </section>
-    );
-  }
+const PRICING_COLORS: Record<string, string> = {
+  free: "text-emerald-600 dark:text-emerald-400",
+  freemium: "text-blue-600 dark:text-blue-400",
+  paid: "text-orange-600 dark:text-orange-400",
+  enterprise: "text-purple-600 dark:text-purple-400",
+};
 
-  if (results.length === 0) {
-    return (
-      <p className="text-muted-foreground text-sm">
-        Nothing matched that yet. Try different words or one of the suggestions
-        above.
-      </p>
-    );
-  }
-
+function HitCard({ hit }: { hit: Hit }) {
   return (
-    <ul className="space-y-3">
-      {results.map((hit) => (
-        <li key={hit.id}>
-          <Card className="border-border bg-card" size="sm">
-            <CardHeader className="gap-1 pb-3">
-              <div className="flex items-start justify-between gap-2">
-                <CardTitle className="font-semibold text-base leading-snug">
-                  {hit.name}
-                </CardTitle>
-                <span className="flex shrink-0 items-center gap-1.5">
-                  {hit.mcp_supported ? (
-                    <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground uppercase tracking-wide">
-                      MCP
-                    </span>
-                  ) : null}
-                  <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground uppercase tracking-wide">
-                    {hit.category}
-                  </span>
-                  {hit.docs_url ? (
-                    <a
-                      className="rounded-md border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground uppercase tracking-wide transition-colors hover:text-foreground"
-                      href={hit.docs_url}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      Docs ↗
-                    </a>
-                  ) : null}
-                </span>
-              </div>
-              <CardDescription className="text-sm leading-relaxed">
-                {hit.description}
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </li>
-      ))}
-    </ul>
+    <li className="group flex items-start gap-4 rounded-2xl border border-border bg-card px-5 py-4 transition-colors hover:border-border/80 hover:bg-muted/30">
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-foreground text-sm leading-snug">
+            {hit.name}
+          </span>
+          {hit.mcp_supported && (
+            <span className="shrink-0 rounded border border-border bg-muted px-1.5 py-px font-mono text-[9px] text-muted-foreground uppercase tracking-wider">
+              MCP
+            </span>
+          )}
+        </div>
+        <p className="line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+          {hit.description}
+        </p>
+      </div>
+      <div className="flex shrink-0 flex-col items-end gap-1.5 pt-0.5">
+        <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground uppercase tracking-wider">
+          {hit.category}
+        </span>
+        <span
+          className={cn(
+            "font-medium text-[10px]",
+            PRICING_COLORS[hit.pricing_model] ?? "text-muted-foreground"
+          )}
+        >
+          {hit.pricing_model}
+        </span>
+        {hit.docs_url && (
+          <a
+            className="font-mono text-[10px] text-muted-foreground/60 underline-offset-2 transition-colors hover:text-foreground hover:underline"
+            href={hit.docs_url}
+            onClick={(e) => e.stopPropagation()}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            docs ↗
+          </a>
+        )}
+      </div>
+    </li>
   );
 }
 
-export function ToolbaseSearch({ preview }: { preview: Product[] }) {
+function PreviewGrid({ products }: { products: PreviewProduct[] }) {
+  return (
+    <div className="space-y-3">
+      <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-[0.15em]">
+        What agents are using
+      </p>
+      <ul className="grid gap-2 sm:grid-cols-2">
+        {products.map((p) => (
+          <li
+            className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3"
+            key={p.id}
+          >
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="truncate font-medium text-foreground text-sm">
+                {p.name}
+              </span>
+              <span className="truncate text-muted-foreground text-xs">
+                {p.description}
+              </span>
+            </div>
+            <div className="flex shrink-0 items-center gap-1.5">
+              {p.mcp.supported && (
+                <span className="rounded border border-border bg-muted px-1.5 py-px font-mono text-[9px] text-muted-foreground uppercase tracking-wider">
+                  MCP
+                </span>
+              )}
+              <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                {p.category}
+              </span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export function ToolbaseSearch({ preview }: { preview: PreviewProduct[] }) {
+  const [inputValue, setInputValue] = useState("");
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Hit[] | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [category, setCategory] = useState("all");
 
-  const runSearch = useCallback((q: string) => {
-    startTransition(() => {
-      searchToolbase(q).then(({ results: next }) => {
-        setResults(next);
-      });
-    });
-  }, []);
+  // Stable results ref — never goes blank during a refetch
+  const lastDataRef = useRef<Hit[]>([]);
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    runSearch(query);
+  const { current: debouncer } = useRef<Debouncer<(q: string) => void>>(
+    new Debouncer((q: string) => setQuery(q), { wait: 300 })
+  );
+
+  const { data, isFetching } = useQuery({
+    queryKey: ["toolbase-search", query, category],
+    queryFn: () =>
+      searchToolbase(query, category).then((r) => r.results as Hit[]),
+    enabled: query.trim().length > 0,
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
+  });
+
+  // Keep the last resolved data so results stay visible while the next fetch runs.
+  if (data !== undefined) {
+    lastDataRef.current = data;
+  } else if (!inputValue.trim()) {
+    // Clear stale results when the input is truly empty so the next search starts fresh.
+    lastDataRef.current = [];
+  }
+
+  const results = data ?? lastDataRef.current;
+
+  // Drive the results panel off inputValue (immediate), not the debounced query,
+  // so the panel switches to/from preview without any 300 ms lag.
+  const showResults = inputValue.trim().length > 0;
+
+  const onQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    setInputValue(v);
+    if (v.trim()) {
+      debouncer.maybeExecute(v);
+    } else {
+      debouncer.cancel();
+      setQuery("");
+    }
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
-      {/* Search form */}
-      <form
-        className="flex flex-col gap-3 sm:flex-row sm:items-center"
-        onSubmit={onSubmit}
-      >
-        <Input
+    <div className="flex flex-col gap-5">
+      {/* Search input */}
+      <div className="relative">
+        <input
           aria-label="Search tools"
           autoComplete="off"
-          className="h-11 flex-1 rounded-2xl border-border bg-background text-base"
-          name="q"
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="describe the problem you're trying to solve…"
-          value={query}
-        />
-        <Button
-          className="h-11 w-28 shrink-0 rounded-2xl"
-          disabled={pending}
-          type="submit"
-        >
-          {pending ? <Spinner className="size-4" /> : "Search"}
-        </Button>
-      </form>
-
-      {/* Suggestions + back — always rendered to prevent layout shift */}
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          aria-hidden={results === null}
           className={cn(
-            "mr-1 text-muted-foreground text-xs underline decoration-muted-foreground/40 underline-offset-2 transition-opacity hover:text-foreground",
-            results === null
-              ? "pointer-events-none opacity-0"
-              : "pointer-events-auto opacity-100"
+            "h-12 w-full rounded-2xl border border-border bg-background px-4 text-foreground text-sm placeholder:text-muted-foreground/60",
+            "focus:outline-none focus:ring-2 focus:ring-foreground/10",
+            "transition-shadow"
           )}
-          onClick={() => setResults(null)}
-          tabIndex={results === null ? -1 : 0}
-          type="button"
-        >
-          ← Back
-        </button>
-        <span className="font-medium text-muted-foreground text-xs">Try:</span>
-        {SUGGESTIONS.map((s) => (
+          onChange={onQueryChange}
+          placeholder="describe what you're trying to build…"
+          value={inputValue}
+        />
+        {isFetching && (
+          <div className="absolute top-1/2 right-4 -translate-y-1/2">
+            <div className="size-4 animate-spin rounded-full border-2 border-border border-t-foreground/40" />
+          </div>
+        )}
+      </div>
+
+      {/* Category filters */}
+      <div className="flex flex-wrap gap-1.5">
+        {CATEGORIES.map((cat) => (
           <button
-            className="rounded-full border border-border bg-background px-3 py-1 text-foreground text-xs transition-colors hover:bg-muted/70"
-            key={s}
-            onClick={() => {
-              setQuery(s);
-              runSearch(s);
-            }}
+            className={cn(
+              "rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors",
+              cat === category
+                ? "border-foreground bg-foreground text-background"
+                : "border-border bg-background text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+            )}
+            key={cat}
+            onClick={() => setCategory(cat)}
             type="button"
           >
-            {s}
+            {cat}
           </button>
         ))}
       </div>
 
-      {/* Results */}
-      <div
-        className={cn(
-          "transition-opacity duration-150",
-          pending && "opacity-50"
+      {/* Results / preview — no opacity transition; spinner in the input is enough */}
+      <div>
+        {!showResults && <PreviewGrid products={preview} />}
+        {showResults && results.length === 0 && !isFetching && (
+          <p className="py-4 text-center text-muted-foreground text-sm">
+            No results. Try different words or clear the category filter.
+          </p>
         )}
-      >
-        <SearchResults preview={preview} results={results} />
+        {showResults && results.length > 0 && (
+          <ul className="space-y-2">
+            {results.map((hit) => (
+              <HitCard hit={hit} key={hit.id} />
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
