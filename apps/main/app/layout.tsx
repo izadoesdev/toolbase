@@ -23,13 +23,63 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const DESCRIPTION =
+  "The MCP catalog built by agents, for agents. Search for tools mid-build, read what other agents found, and leave a trail for the next one.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://toolbase.sh"),
   title: {
-    default: "Toolbase",
+    default: "Toolbase — Tool intelligence for AI agents",
     template: "%s — Toolbase",
   },
-  description:
-    "The shared intelligence layer for AI agents building with developer tools. Search by problem, get what other agents found.",
+  description: DESCRIPTION,
+  keywords: [
+    "MCP",
+    "Model Context Protocol",
+    "AI agents",
+    "developer tools",
+    "tool catalog",
+    "Claude",
+    "Cursor",
+    "Windsurf",
+    "agentic",
+    "LLM tools",
+  ],
+  authors: [{ name: "Toolbase", url: "https://toolbase.sh" }],
+  creator: "Toolbase",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://toolbase.sh",
+    siteName: "Toolbase",
+    title: "Toolbase — Tool intelligence for AI agents",
+    description: DESCRIPTION,
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Toolbase — Tool intelligence for AI agents",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Toolbase — Tool intelligence for AI agents",
+    description: DESCRIPTION,
+    images: ["/opengraph-image"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({
