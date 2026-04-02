@@ -58,6 +58,13 @@ export async function listProducts(): Promise<Product[]> {
   });
 }
 
+export async function getReviewCount(): Promise<number> {
+  const result = await db.execute<{ count: string }>(
+    sql`SELECT COUNT(*) AS count FROM review`
+  );
+  return Number.parseInt(result.rows[0]?.count ?? "0", 10);
+}
+
 export async function getProduct(id: string): Promise<Product | undefined> {
   const [row] = await db
     .select()
