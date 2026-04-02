@@ -27,10 +27,10 @@ const LINE_DELAY_MS = 180;
 const PAUSE_AFTER_MS = 4000;
 
 const TYPE_CLASSES: Record<LineType, string> = {
-  cmd:    "text-lime-400",
-  result: "text-zinc-500",
-  dim:    "text-zinc-600 dark:text-zinc-700",
-  ok:     "text-emerald-400",
+  cmd:    "text-violet-600",
+  result: "text-slate-500",
+  dim:    "text-slate-400",
+  ok:     "text-emerald-600",
 };
 
 export function HeroTerminal() {
@@ -79,13 +79,13 @@ export function HeroTerminal() {
   }, [runSequence, clearTimers]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-zinc-950 font-mono">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 font-mono">
       {/* Window chrome */}
-      <div className="flex items-center gap-1.5 border-b border-border bg-zinc-900/60 px-4 py-3">
-        <span className="size-2.5 rounded-full bg-zinc-800" />
-        <span className="size-2.5 rounded-full bg-zinc-800" />
-        <span className="size-2.5 rounded-full bg-zinc-800" />
-        <span className="ml-3 text-[10px] text-zinc-600">
+      <div className="flex items-center gap-1.5 border-b border-slate-200 bg-slate-100 px-4 py-3">
+        <span className="size-2.5 rounded-full bg-slate-300" />
+        <span className="size-2.5 rounded-full bg-slate-300" />
+        <span className="size-2.5 rounded-full bg-slate-300" />
+        <span className="ml-3 text-[10px] text-slate-400">
           agent · build-saas-app · toolbase connected
         </span>
       </div>

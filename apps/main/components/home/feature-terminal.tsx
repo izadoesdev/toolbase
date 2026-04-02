@@ -14,10 +14,10 @@ const LINE_DELAY_MS = 200;
 const PAUSE_AFTER_MS = 5000;
 
 const TYPE_CLASSES: Record<LineType, string> = {
-  cmd:    "text-lime-400",
-  result: "text-zinc-500",
-  dim:    "text-zinc-600 dark:text-zinc-700",
-  ok:     "text-emerald-400",
+  cmd:    "text-violet-600",
+  result: "text-slate-500",
+  dim:    "text-slate-400",
+  ok:     "text-emerald-600",
   blank:  "",
 };
 
@@ -93,14 +93,14 @@ export function FeatureTerminal({ lines, className }: FeatureTerminalProps) {
     <div
       ref={containerRef}
       className={cn(
-        "overflow-hidden rounded-xl border border-border bg-zinc-950 font-mono",
+        "overflow-hidden rounded-xl border border-slate-200 bg-slate-50 font-mono",
         className
       )}
     >
-      <div className="flex items-center gap-1.5 border-b border-border bg-zinc-900/60 px-3 py-2.5">
-        <span className="size-2 rounded-full bg-zinc-800" />
-        <span className="size-2 rounded-full bg-zinc-800" />
-        <span className="size-2 rounded-full bg-zinc-800" />
+      <div className="flex items-center gap-1.5 border-b border-slate-200 bg-slate-100 px-3 py-2.5">
+        <span className="size-2 rounded-full bg-slate-300" />
+        <span className="size-2 rounded-full bg-slate-300" />
+        <span className="size-2 rounded-full bg-slate-300" />
       </div>
       <div className="space-y-1 p-4" style={{ minHeight: `${bodyMinHeight}px` }}>
         {lines.map((line, i) => (
