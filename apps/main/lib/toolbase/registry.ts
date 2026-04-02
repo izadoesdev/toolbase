@@ -454,14 +454,37 @@ export async function getPendingProduct(
     id: r.id,
     isUpdate: r.status === "update_pending",
     submittedBy: r.submittedBy,
-    toolbaseMeta:
-      (rawData._toolbase_meta as ToolbaseMeta | undefined) ?? null,
+    toolbaseMeta: (rawData._toolbase_meta as ToolbaseMeta | undefined) ?? null,
     updateFor: (result.data.meta?.update_for as string | undefined) ?? null,
   };
 }
 
+async function applyConflictResolutions(
+  base: Product,
+  originalId: string,
+  conflicts: Record<string, { current: unknown; proposed: unknown }>,
+  resolutions: Record<string, "current" | "proposed">
+): Promise<Product> {
+  const orig = await getProduct(originalId);
+  if (!orig) {
+    return base;
+  }
+  const origRecord = orig as Record<string, unknown>;
+  const overrides: Record<string, unknown> = {};
+  for (const [field, choice] of Object.entries(resolutions)) {
+    if (choice === "current" && field in conflicts) {
+      overrides[field] = origRecord[field];
+    }
+  }
+  if (Object.keys(overrides).length === 0) {
+    return base;
+  }
+  return productSchema.parse({ ...base, ...overrides });
+}
+
 export async function approveProduct(
-  id: string
+  id: string,
+  resolutions?: Record<string, "current" | "proposed">
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const [row] = await db
     .select()
@@ -473,12 +496,23 @@ export async function approveProduct(
   }
 
   if (row.status === "update_pending") {
-    const parsed = productSchema.safeParse(row.data);
+    const rawData = row.data as Record<string, unknown>;
+    const parsed = productSchema.safeParse(rawData);
     const originalId = parsed.success
       ? (parsed.data.meta?.update_for ?? null)
       : null;
     if (originalId && parsed.success) {
-      await applyUpdateToOriginal(id, parsed.data, originalId);
+      const meta = rawData._toolbase_meta as ToolbaseMeta | undefined;
+      const resolvedData =
+        resolutions && meta
+          ? await applyConflictResolutions(
+              parsed.data,
+              originalId,
+              meta.conflicts,
+              resolutions
+            )
+          : parsed.data;
+      await applyUpdateToOriginal(id, resolvedData, originalId);
       return { ok: true };
     }
   }
