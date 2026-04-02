@@ -9,7 +9,7 @@ interface DiffSummaryProps {
   toolbaseMeta: ToolbaseMeta;
 }
 
-function isPlainObject(v: unknown): v is Record<string, unknown> {
+export function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
@@ -18,7 +18,7 @@ function truncate(s: string, max = 120): string {
 }
 
 // Renders any value as JSX — strings, booleans, URLs, arrays, objects
-function Value({ v, depth = 0 }: { depth?: number; v: unknown }) {
+export function Value({ v, depth = 0 }: { depth?: number; v: unknown }) {
   if (v === null || v === undefined) {
     return <span className="text-muted-foreground/50">—</span>;
   }

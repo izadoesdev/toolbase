@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DiffSummary } from "@/components/admin/diff-summary";
+import { ProductData } from "@/components/admin/product-data";
 import { Button } from "@/components/ui/button";
 import type { PendingProduct } from "@/lib/toolbase/registry";
 import type { Product } from "@/lib/toolbase/schema";
@@ -140,9 +141,7 @@ export function ReviewDetail({ approvedProduct, item }: ReviewDetailProps) {
           <p className="font-semibold text-muted-foreground text-xs uppercase tracking-wide">
             Product data
           </p>
-          <pre className="overflow-auto rounded-lg border border-border bg-muted/30 p-4 text-xs leading-relaxed">
-            {JSON.stringify(item.data, null, 2)}
-          </pre>
+          <ProductData data={item.data} />
         </div>
       )}
 
