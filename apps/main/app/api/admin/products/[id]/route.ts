@@ -12,10 +12,24 @@ export async function POST(
   }
 
   const { id } = await params;
-  const { action } = (await request.json()) as { action: "approve" | "reject" };
+
+  let body: { action?: unknown; resolutions?: unknown };
+  try {
+    body = (await request.json()) as {
+      action?: unknown;
+      resolutions?: unknown;
+    };
+  } catch {
+    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const { action, resolutions } = body as {
+    action: "approve" | "reject";
+    resolutions?: Record<string, "current" | "proposed">;
+  };
 
   if (action === "approve") {
-    const result = await approveProduct(id);
+    const result = await approveProduct(id, resolutions);
     if (!result.ok) {
       return Response.json({ error: result.error }, { status: 404 });
     }
