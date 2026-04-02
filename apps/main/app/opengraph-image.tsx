@@ -1,35 +1,9 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-
-const FONT_URL_RE = /url\(([^)]+)\)/;
-
-async function fetchFont(
-  family: string,
-  weight: number
-): Promise<ArrayBuffer | undefined> {
-  try {
-    // Request TTF (not woff2) by sending an old UA
-    const css = await fetch(
-      `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}`,
-      {
-        headers: {
-          "User-Agent":
-            "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; .NET CLR 1.1.4322)",
-        },
-      }
-    ).then((r) => r.text());
-    const url = css.match(FONT_URL_RE)?.[1];
-    if (!url) {
-      return undefined;
-    }
-    return fetch(url).then((r) => r.arrayBuffer());
-  } catch {
-    return undefined;
-  }
-}
 
 const TERMINAL_LINES = [
   { color: "#7c3aed", text: 'toolbase_search("send email")' },
@@ -42,30 +16,9 @@ const TERMINAL_LINES = [
 ];
 
 export default async function OgImage() {
-  const [fontBold, fontNormal] = await Promise.all([
-    fetchFont("Inter", 700),
-    fetchFont("Inter", 400),
-  ]);
-
-  interface FontConfig {
-    data: ArrayBuffer;
-    name: string;
-    style: "normal" | "italic";
-    weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
-  }
-  const fonts: FontConfig[] = [];
-  if (fontBold) {
-    fonts.push({ name: "Inter", data: fontBold, weight: 700, style: "normal" });
-  }
-  if (fontNormal) {
-    fonts.push({
-      name: "Inter",
-      data: fontNormal,
-      weight: 400,
-      style: "normal",
-    });
-  }
-  const ff = fonts.length ? "Inter, sans-serif" : "sans-serif";
+  const fontBold = await readFile(
+    path.join(process.cwd(), "app/fonts/Inter-Bold.ttf")
+  );
 
   return new ImageResponse(
     <div
@@ -75,7 +28,7 @@ export default async function OgImage() {
         height: "100%",
         background: "#f8fafc",
         padding: "72px 80px",
-        fontFamily: ff,
+        fontFamily: "Inter, sans-serif",
       }}
     >
       {/* Left column */}
@@ -96,10 +49,9 @@ export default async function OgImage() {
               fontWeight: 400,
               color: "#64748b",
               letterSpacing: "0.15em",
-              textTransform: "uppercase",
             }}
           >
-            toolbase.sh
+            TOOLBASE.SH
           </span>
           <div
             style={{
@@ -125,7 +77,6 @@ export default async function OgImage() {
               fontWeight: 700,
               color: "#0f172a",
               lineHeight: 1.05,
-              letterSpacing: "-0.03em",
               display: "flex",
             }}
           >
@@ -137,7 +88,6 @@ export default async function OgImage() {
               fontWeight: 700,
               color: "#94a3b8",
               lineHeight: 1.05,
-              letterSpacing: "-0.03em",
               display: "flex",
             }}
           >
@@ -186,10 +136,8 @@ export default async function OgImage() {
           background: "white",
           border: "1px solid #e2e8f0",
           borderRadius: "16px",
-          overflow: "hidden",
           display: "flex",
           flexDirection: "column",
-          boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
         }}
       >
         {/* Chrome bar */}
@@ -197,6 +145,7 @@ export default async function OgImage() {
           style={{
             background: "#f1f5f9",
             borderBottom: "1px solid #e2e8f0",
+            borderRadius: "16px 16px 0 0",
             padding: "14px 16px",
             display: "flex",
             alignItems: "center",
@@ -219,7 +168,7 @@ export default async function OgImage() {
         {/* Lines */}
         <div
           style={{
-            padding: "20px 20px",
+            padding: "20px",
             display: "flex",
             flexDirection: "column",
             gap: "10px",
@@ -232,7 +181,6 @@ export default async function OgImage() {
               key={line.text}
               style={{
                 fontSize: "13px",
-                fontFamily: "monospace",
                 color: line.color,
                 display: "flex",
                 lineHeight: 1.4,
@@ -246,7 +194,7 @@ export default async function OgImage() {
     </div>,
     {
       ...size,
-      fonts,
+      fonts: [{ name: "Inter", data: fontBold, weight: 700, style: "normal" }],
     }
   );
 }
