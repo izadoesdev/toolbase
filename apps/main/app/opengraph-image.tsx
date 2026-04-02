@@ -1,36 +1,58 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { ImageResponse } from "next/og";
+import { ImageResponse } from "takumi-js/response";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 const TERMINAL_LINES = [
-  { color: "#7c3aed", text: 'toolbase_search("send email")' },
-  { color: "#64748b", text: "→ Resend  ★ 4.6  [MCP]" },
-  { color: "#64748b", text: "  Loops   ★ 4.2  usage_based" },
-  { color: "#7c3aed", text: 'toolbase_get_reviews("resend")' },
-  { color: "#64748b", text: '→ "API key worked instantly."' },
-  { color: "#7c3aed", text: 'toolbase_review("resend", 5)' },
-  { color: "#10b981", text: "→ ✓ Review submitted" },
+  { color: "#a78bfa", text: 'toolbase_search("send email")' },
+  { color: "#94a3b8", text: "→ Resend  ★ 4.6  [MCP]" },
+  { color: "#94a3b8", text: "  Loops   ★ 4.2  usage_based" },
+  { color: "#a78bfa", text: 'toolbase_get_reviews("resend")' },
+  { color: "#94a3b8", text: '→ "API key worked instantly."' },
+  { color: "#a78bfa", text: 'toolbase_review("resend", 5)' },
+  { color: "#34d399", text: "→ ✓ Review submitted" },
 ];
 
-export default async function OgImage() {
-  const fontBold = await readFile(
-    path.join(process.cwd(), "app/fonts/Inter-Bold.ttf")
-  );
-
+export default function OgImage() {
   return new ImageResponse(
     <div
       style={{
         display: "flex",
         width: "100%",
         height: "100%",
-        background: "#f8fafc",
-        padding: "72px 80px",
-        fontFamily: "Inter, sans-serif",
+        background: "#0f172a",
+        padding: "64px",
+        fontFamily: "Geist, sans-serif",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
+      {/* Violet ambient glow */}
+      <div
+        style={{
+          position: "absolute",
+          top: "-120px",
+          right: "-60px",
+          width: "560px",
+          height: "480px",
+          background:
+            "radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%)",
+          display: "flex",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "-80px",
+          left: "200px",
+          width: "400px",
+          height: "300px",
+          background:
+            "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)",
+          display: "flex",
+        }}
+      />
+
       {/* Left column */}
       <div
         style={{
@@ -38,30 +60,32 @@ export default async function OgImage() {
           flexDirection: "column",
           flex: 1,
           justifyContent: "space-between",
-          paddingRight: "64px",
+          paddingRight: "60px",
+          position: "relative",
         }}
       >
-        {/* Brand badge */}
+        {/* Brand */}
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <span
             style={{
-              fontSize: "15px",
-              fontWeight: 400,
-              color: "#64748b",
-              letterSpacing: "0.15em",
+              fontSize: "14px",
+              fontWeight: 500,
+              color: "#475569",
+              letterSpacing: "0.18em",
             }}
           >
             TOOLBASE.SH
           </span>
           <div
             style={{
-              background: "#7c3aed",
-              color: "white",
+              background: "rgba(124,58,237,0.2)",
+              border: "1px solid rgba(124,58,237,0.4)",
+              color: "#a78bfa",
               fontSize: "11px",
-              fontWeight: 700,
-              padding: "4px 10px",
+              fontWeight: 600,
+              padding: "3px 9px",
               borderRadius: "5px",
-              letterSpacing: "0.08em",
+              letterSpacing: "0.1em",
               display: "flex",
             }}
           >
@@ -73,10 +97,11 @@ export default async function OgImage() {
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div
             style={{
-              fontSize: "68px",
+              fontSize: "72px",
               fontWeight: 700,
-              color: "#0f172a",
+              color: "#f1f5f9",
               lineHeight: 1.05,
+              letterSpacing: "-0.02em",
               display: "flex",
             }}
           >
@@ -84,10 +109,11 @@ export default async function OgImage() {
           </div>
           <div
             style={{
-              fontSize: "68px",
+              fontSize: "72px",
               fontWeight: 700,
-              color: "#94a3b8",
+              color: "#334155",
               lineHeight: 1.05,
+              letterSpacing: "-0.02em",
               display: "flex",
             }}
           >
@@ -95,8 +121,8 @@ export default async function OgImage() {
           </div>
           <div
             style={{
-              marginTop: "20px",
-              fontSize: "22px",
+              marginTop: "22px",
+              fontSize: "21px",
               fontWeight: 400,
               color: "#64748b",
               lineHeight: 1.5,
@@ -107,19 +133,19 @@ export default async function OgImage() {
           </div>
         </div>
 
-        {/* Platform pills */}
-        <div style={{ display: "flex", gap: "10px" }}>
+        {/* Platform tags */}
+        <div style={{ display: "flex", gap: "8px" }}>
           {["Claude", "Cursor", "Windsurf"].map((p) => (
             <div
               key={p}
               style={{
-                background: "white",
-                border: "1px solid #e2e8f0",
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.09)",
                 borderRadius: "8px",
                 padding: "8px 18px",
                 fontSize: "14px",
                 fontWeight: 400,
-                color: "#475569",
+                color: "#64748b",
                 display: "flex",
               }}
             >
@@ -129,37 +155,40 @@ export default async function OgImage() {
         </div>
       </div>
 
-      {/* Right: fake terminal */}
+      {/* Terminal card */}
       <div
         style={{
-          width: "360px",
-          background: "white",
-          border: "1px solid #e2e8f0",
+          width: "370px",
+          background: "#1e293b",
+          border: "1px solid rgba(255,255,255,0.07)",
           borderRadius: "16px",
           display: "flex",
           flexDirection: "column",
+          overflow: "hidden",
+          boxShadow:
+            "0 0 0 1px rgba(124,58,237,0.1), 0 24px 64px rgba(0,0,0,0.5)",
+          position: "relative",
         }}
       >
-        {/* Chrome bar */}
+        {/* Window chrome */}
         <div
           style={{
-            background: "#f1f5f9",
-            borderBottom: "1px solid #e2e8f0",
-            borderRadius: "16px 16px 0 0",
+            background: "#1e293b",
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
             padding: "14px 16px",
             display: "flex",
             alignItems: "center",
             gap: "6px",
           }}
         >
-          {(["dot-1", "dot-2", "dot-3"] as const).map((id) => (
+          {(["r", "y", "g"] as const).map((id) => (
             <div
               key={id}
               style={{
                 width: "10px",
                 height: "10px",
                 borderRadius: "50%",
-                background: "#cbd5e1",
+                background: "rgba(255,255,255,0.12)",
                 display: "flex",
               }}
             />
@@ -168,10 +197,10 @@ export default async function OgImage() {
         {/* Lines */}
         <div
           style={{
-            padding: "20px",
+            padding: "22px 20px",
             display: "flex",
             flexDirection: "column",
-            gap: "10px",
+            gap: "11px",
             flex: 1,
             justifyContent: "center",
           }}
@@ -181,9 +210,10 @@ export default async function OgImage() {
               key={line.text}
               style={{
                 fontSize: "13px",
+                fontFamily: "Geist Mono, monospace",
                 color: line.color,
                 display: "flex",
-                lineHeight: 1.4,
+                lineHeight: 1.45,
               }}
             >
               {line.text}
@@ -194,7 +224,7 @@ export default async function OgImage() {
     </div>,
     {
       ...size,
-      fonts: [{ name: "Inter", data: fontBold, weight: 700, style: "normal" }],
+      format: "png",
     }
   );
 }
