@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { AdminClient } from "@/components/admin/admin-client";
+import { QueueList } from "@/components/admin/queue-list";
 import { auth } from "@/lib/auth";
 import { listPendingProducts } from "@/lib/toolbase/registry";
 
@@ -17,7 +17,7 @@ export default async function AdminPage() {
   const pending = await listPendingProducts();
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
+    <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
       <div className="mb-8 flex items-baseline justify-between gap-4">
         <h1 className="font-display font-semibold text-2xl text-foreground tracking-tight">
           Review queue
@@ -28,7 +28,7 @@ export default async function AdminPage() {
           </span>
         )}
       </div>
-      <AdminClient initialPending={pending} />
+      <QueueList initialPending={pending} />
     </main>
   );
 }
