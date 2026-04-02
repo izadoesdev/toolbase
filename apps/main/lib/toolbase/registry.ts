@@ -1,4 +1,5 @@
-import { and, eq, inArray, like } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
+import { and, eq, inArray, like, sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { db } from "@/lib/db";
 import {
@@ -6,8 +7,9 @@ import {
   catalogProduct,
   review as reviewTable,
 } from "@/lib/db/schema";
+import { buildEmbeddingDoc, embedDocument, embedQuery } from "./embed";
 import type { QueryFilters, RelatedHit } from "./match";
-import { findRelatedProducts, queryProducts } from "./match";
+import { findRelatedProducts, productToHit, queryProducts } from "./match";
 import type {
   BugReport,
   BugReportInput,
@@ -70,14 +72,173 @@ export async function searchProducts(
   query: string,
   filters?: QueryFilters
 ): Promise<ReturnType<typeof queryProducts>> {
+  if (process.env.VOYAGE_API_KEY) {
+    try {
+      const embedding = await embedQuery(query);
+      return vectorSearchProducts(embedding, query, filters);
+    } catch (err) {
+      console.error(
+        "[registry] Vector search failed, falling back to keyword search",
+        err
+      );
+    }
+  }
   const products = await listProducts();
   return queryProducts(query, products, filters);
+}
+
+async function vectorSearchProducts(
+  embedding: number[],
+  query: string,
+  filters?: QueryFilters
+): Promise<ReturnType<typeof queryProducts>> {
+  const vecStr = `[${embedding.join(",")}]`;
+  const limit = filters?.limit ?? 10;
+
+  const conditions: SQL[] = [
+    sql`status = 'approved'`,
+    sql`embedding IS NOT NULL`,
+  ];
+
+  if (filters?.category) {
+    conditions.push(sql`data->>'category' = ${filters.category}`);
+  }
+  if (filters?.mcp_only) {
+    conditions.push(sql`(data->'mcp'->>'supported')::boolean = true`);
+  }
+  if (filters?.has_free_tier !== undefined) {
+    conditions.push(
+      sql`(data->'pricing'->>'has_free_tier')::boolean = ${filters.has_free_tier}`
+    );
+  }
+  if (filters?.self_hostable !== undefined) {
+    conditions.push(
+      sql`(data->'hosting'->>'self_hostable')::boolean = ${filters.self_hostable}`
+    );
+  }
+  if (filters?.open_source !== undefined) {
+    conditions.push(
+      sql`(data->'hosting'->>'open_source')::boolean = ${filters.open_source}`
+    );
+  }
+  if (filters?.difficulty) {
+    conditions.push(
+      sql`data->'integration'->>'difficulty' = ${filters.difficulty}`
+    );
+  }
+  if (filters?.sdk_language) {
+    conditions.push(
+      sql`data->'sdks' @> ${JSON.stringify([{ language: filters.sdk_language }])}::jsonb`
+    );
+  }
+  if (filters?.compliance) {
+    conditions.push(
+      sql`data->'compliance'->'certifications' ? ${filters.compliance}`
+    );
+  }
+  if (filters?.maturity) {
+    conditions.push(sql`data->>'maturity' = ${filters.maturity}`);
+  }
+
+  const whereClause = sql.join(conditions, sql` AND `);
+  const result = await db.execute<{ id: string; data: unknown; score: string }>(
+    sql`SELECT id, data, 1 - (embedding <=> ${vecStr}::vector) AS score
+        FROM catalog_product
+        WHERE ${whereClause}
+        ORDER BY embedding <=> ${vecStr}::vector
+        LIMIT ${limit}`
+  );
+
+  return result.rows.flatMap((row) => {
+    const parsed = productSchema.safeParse(row.data);
+    if (!parsed.success) {
+      return [];
+    }
+    const score = Number.parseFloat(row.score);
+    return [
+      productToHit(parsed.data, score, [`semantic match for '${query}'`]),
+    ];
+  });
+}
+
+async function triggerEmbedding(productId: string): Promise<void> {
+  if (!process.env.VOYAGE_API_KEY) {
+    return;
+  }
+  try {
+    const product = await getProduct(productId);
+    if (!product) {
+      return;
+    }
+    const embedding = await embedDocument(buildEmbeddingDoc(product));
+    const vecStr = `[${embedding.join(",")}]`;
+    await db.execute(
+      sql`UPDATE catalog_product
+          SET embedding = ${vecStr}::vector, embedding_updated_at = now()
+          WHERE id = ${productId}`
+    );
+  } catch (err) {
+    console.error("[registry] Failed to embed product", productId, err);
+  }
 }
 
 export async function getRelatedProducts(
   id: string,
   limit = 8
 ): Promise<RelatedHit[]> {
+  if (process.env.VOYAGE_API_KEY) {
+    try {
+      const embResult = await db.execute<{ embedding: string | null }>(
+        sql`SELECT embedding FROM catalog_product
+            WHERE id = ${id} AND status = 'approved' AND embedding IS NOT NULL
+            LIMIT 1`
+      );
+      const embStr = embResult.rows[0]?.embedding;
+      if (embStr) {
+        const result = await db.execute<{
+          id: string;
+          data: unknown;
+          score: string;
+        }>(
+          sql`SELECT id, data, 1 - (embedding <=> ${embStr}::vector) AS score
+              FROM catalog_product
+              WHERE status = 'approved'
+                AND id != ${id}
+                AND embedding IS NOT NULL
+              ORDER BY embedding <=> ${embStr}::vector
+              LIMIT ${limit}`
+        );
+        const hits = result.rows.flatMap((row) => {
+          const parsed = productSchema.safeParse(row.data);
+          if (!parsed.success) {
+            return [];
+          }
+          const p = parsed.data;
+          return [
+            {
+              category: p.category,
+              description: p.description,
+              id: p.id,
+              mcp_supported: p.mcp.supported,
+              name: p.name,
+              pricing_model: p.pricing.model,
+              relation: "complementary" as const,
+              score: Number.parseFloat(row.score),
+            } satisfies RelatedHit,
+          ];
+        });
+        if (hits.length > 0) {
+          return hits;
+        }
+      }
+    } catch (err) {
+      console.error(
+        "[registry] Vector related search failed, falling back",
+        err
+      );
+    }
+  }
+
   const target = await getProduct(id);
   if (!target) {
     return [];
@@ -346,6 +507,7 @@ async function collapseIntoExistingUpdate(
     Object.keys(toolbaseMeta.conflicts).length === 0
   ) {
     await applyUpdateToOriginal(updateRow.id, parsed.data, id);
+    await triggerEmbedding(id);
     return { auto_approved: true, ok: true, update_id: updateRow.id };
   }
 
@@ -513,6 +675,7 @@ export async function approveProduct(
             )
           : parsed.data;
       await applyUpdateToOriginal(id, resolvedData, originalId);
+      await triggerEmbedding(originalId);
       return { ok: true };
     }
   }
@@ -521,6 +684,7 @@ export async function approveProduct(
     .update(catalogProduct)
     .set({ status: "approved" })
     .where(eq(catalogProduct.id, id));
+  await triggerEmbedding(id);
   return { ok: true };
 }
 

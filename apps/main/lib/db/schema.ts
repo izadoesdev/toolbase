@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  customType,
   index,
   integer,
   jsonb,
@@ -8,6 +9,19 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+
+// pgvector column — requires `CREATE EXTENSION IF NOT EXISTS vector;` before db:push
+const vector1024 = customType<{ data: number[]; driverData: string }>({
+  dataType() {
+    return "vector(1024)";
+  },
+  fromDriver(value: string): number[] {
+    return JSON.parse(value);
+  },
+  toDriver(value: number[]): string {
+    return `[${value.join(",")}]`;
+  },
+});
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -93,6 +107,9 @@ export const catalogProduct = pgTable("catalog_product", {
   status: text("status").default("approved").notNull(),
   submittedBy: text("submitted_by"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  // pgvector: populated on approval; null until backfill-embeddings.ts is run
+  embedding: vector1024("embedding"),
+  embeddingUpdatedAt: timestamp("embedding_updated_at"),
 });
 
 export const review = pgTable(
