@@ -1,5 +1,6 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp";
 import { createMcpServer } from "@/lib/mcp/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { canMutateCatalog, getSessionUserId } from "@/lib/toolbase/permissions";
 
 const CORS_HEADERS: Record<string, string> = {
@@ -52,6 +53,22 @@ export async function handleMcpRequest(request: Request): Promise<Response> {
   const origin = request.headers.get("origin");
   if (!isOriginAllowed(origin)) {
     return new Response("Forbidden", { status: 403 });
+  }
+
+  const apiKey = request.headers.get("x-api-key");
+  if (!apiKey) {
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      "unknown";
+    const rl = checkRateLimit(ip);
+    if (!rl.allowed) {
+      return withCors(
+        new Response("Too Many Requests", {
+          status: 429,
+          headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) },
+        })
+      );
+    }
   }
 
   const allowWrite = await canMutateCatalog(request.headers);

@@ -6,16 +6,11 @@ import { admin, bearer } from "better-auth/plugins";
 import { db } from "./db";
 /** biome-ignore lint/performance/noNamespaceImport: Drizzle adapter requires namespace import  DO NOT REMOVE THIS*/
 import * as schema from "./db/schema";
+import { env } from "./env";
 
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
-  secret: (() => {
-    const s = process.env.BETTER_AUTH_SECRET;
-    if (!s) {
-      throw new Error("BETTER_AUTH_SECRET is not set");
-    }
-    return s;
-  })(),
+  baseURL: env.BETTER_AUTH_URL ?? "http://localhost:3000",
+  secret: env.BETTER_AUTH_SECRET,
   database: drizzleAdapter(db, {
     provider: "pg",
     schema,
@@ -33,12 +28,12 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+      clientId: env.GOOGLE_CLIENT_ID ?? "",
+      clientSecret: env.GOOGLE_CLIENT_SECRET ?? "",
     },
     github: {
-      clientId: process.env.GITHUB_CLIENT_ID ?? "",
-      clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
+      clientId: env.GITHUB_CLIENT_ID ?? "",
+      clientSecret: env.GITHUB_CLIENT_SECRET ?? "",
     },
   },
   plugins: [

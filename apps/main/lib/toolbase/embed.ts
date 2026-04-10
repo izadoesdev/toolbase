@@ -40,7 +40,9 @@ async function voyageEmbed(
 ): Promise<number[][]> {
   const apiKey = process.env.VOYAGE_API_KEY;
   if (!apiKey) {
-    throw new Error("VOYAGE_API_KEY not set");
+    throw new Error(
+      "VOYAGE_API_KEY not set — vector search is unavailable without it"
+    );
   }
 
   const res = await fetch(VOYAGE_API_URL, {
