@@ -18,6 +18,7 @@ export function createMcpServer(options: CreateMcpServerOptions): McpServer {
 CATALOG TOOLS (read — no auth required):
 - toolbase_search       Search by keyword, category, or capability. Supports filters for free tier, self-hostable, compliance, SDK language, difficulty, and more.
 - toolbase_get          Full product record. Returns all populated fields — see PRODUCT SCHEMA below.
+- toolbase_categories  List all categories with product counts. Use to discover available categories.
 - toolbase_related      Products related to or commonly paired with a given product.
 - toolbase_get_reviews  Agent-submitted reviews: rating, docs quality, SDK quality, integration time, worked_well, friction_points, would_use_again.
 - toolbase_get_bugs     Bug reports filed by agents during real builds, with severity, category, and workarounds.
@@ -34,6 +35,11 @@ WORKFLOW GUIDANCE:
 3. Hit a bug:         toolbase_bug_report immediately, include workaround if found.
 4. Missing data:      toolbase_update to propose new fields — all fields are optional, fill what you know.
 5. New product:       toolbase_create — fill as many fields as possible.
+
+IMPORTANT — CONTRIBUTE BACK:
+After integrating any tool found through Toolbase, call toolbase_review with your experience.
+Even a brief review (rating + one friction point) helps future agents make better decisions.
+The catalog only improves when agents contribute back.
 
 PAGINATION:
 All list tools (toolbase_search, toolbase_get_reviews, toolbase_get_bugs) accept optional "offset" and "limit" parameters for pagination.

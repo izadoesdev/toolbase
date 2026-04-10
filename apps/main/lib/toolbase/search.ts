@@ -6,6 +6,7 @@ import { catalogProduct } from "@/lib/db/schema";
 import { buildEmbeddingDoc, embedDocument, embedQuery } from "./embed";
 import type { QueryFilters, RelatedHit } from "./match";
 import { findRelatedProducts, productToHit, queryProducts } from "./match";
+import { getReviewSummary } from "./reviews";
 import type { Product } from "./schema";
 import { productSchema } from "./schema";
 
@@ -29,14 +30,48 @@ export async function listProducts(opts?: {
   });
 }
 
+async function enrichWithReviews(
+  hits: ReturnType<typeof queryProducts>
+): Promise<ReturnType<typeof queryProducts>> {
+  const summaries = await Promise.all(
+    hits.map((hit) => getReviewSummary(hit.id))
+  );
+  return hits.map((hit, i) => ({
+    ...hit,
+    avg_rating: summaries[i].avg_rating,
+    review_count: summaries[i].count,
+  }));
+}
+
+function applyReviewBoost(
+  hits: Awaited<ReturnType<typeof enrichWithReviews>>
+): typeof hits {
+  const boosted = hits.map((hit) => {
+    let boost = 0;
+    const rc = (hit as { review_count?: number }).review_count ?? 0;
+    const ar = (hit as { avg_rating?: number }).avg_rating ?? 0;
+    if (rc > 0) {
+      boost += 1;
+    }
+    if (ar >= 4 && rc >= 3) {
+      boost += 2;
+    }
+    return { ...hit, score: hit.score + boost };
+  });
+  return boosted.sort((a, b) => b.score - a.score);
+}
+
 export async function searchProducts(
   query: string,
   filters?: QueryFilters
 ): Promise<ReturnType<typeof queryProducts>> {
+  let hits: ReturnType<typeof queryProducts>;
   if (process.env.VOYAGE_API_KEY) {
     try {
       const embedding = await embedQuery(query);
-      return vectorSearchProducts(embedding, query, filters);
+      hits = await vectorSearchProducts(embedding, query, filters);
+      const enriched = await enrichWithReviews(hits);
+      return applyReviewBoost(enriched);
     } catch (err) {
       console.error(
         "[registry] Vector search failed, falling back to keyword search",
@@ -45,7 +80,9 @@ export async function searchProducts(
     }
   }
   const products = await listProducts();
-  return queryProducts(query, products, filters);
+  hits = queryProducts(query, products, filters);
+  const enriched = await enrichWithReviews(hits);
+  return applyReviewBoost(enriched);
 }
 
 async function vectorSearchProducts(
@@ -191,6 +228,22 @@ export async function getRelatedProducts(
   }
   const allProducts = await listProducts();
   return findRelatedProducts(target, allProducts, limit);
+}
+
+export async function listCategories(): Promise<
+  Array<{ category: string; count: number }>
+> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("products");
+  const products = await listProducts();
+  const counts = new Map<string, number>();
+  for (const p of products) {
+    counts.set(p.category, (counts.get(p.category) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([category, count]) => ({ category, count }))
+    .sort((a, b) => b.count - a.count);
 }
 
 export async function triggerEmbedding(productId: string): Promise<void> {

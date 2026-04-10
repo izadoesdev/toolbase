@@ -4,6 +4,7 @@ const WORD_SPLIT = /[\s_-]+/;
 
 export interface QueryHit {
   alternatives?: string[];
+  avg_rating?: number | null;
   capabilities: string[];
   category: string;
   description: string;
@@ -19,6 +20,7 @@ export interface QueryHit {
   open_source?: boolean;
   pricing_model: string;
   requires_card?: boolean;
+  review_count?: number;
   score: number;
   sdk_languages?: string[];
   self_hostable?: boolean;

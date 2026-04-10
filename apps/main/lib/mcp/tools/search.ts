@@ -6,6 +6,7 @@ import {
   getProduct,
   getRelatedProducts,
   getReviewSummary,
+  listCategories,
   searchProducts,
 } from "@/lib/toolbase/registry";
 
@@ -227,6 +228,36 @@ export function registerSearchTools(server: McpServer): void {
             type: "text" as const,
             text: JSON.stringify(
               { product_id: id, count: related.length, related },
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    }
+  );
+
+  server.registerTool(
+    "toolbase_categories",
+    {
+      title: "List all categories",
+      description:
+        "Returns all product categories in the catalog with the number of tools in each. Use this to discover what categories are available before filtering searches.",
+      inputSchema: {},
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async () => {
+      const categories = await listCategories();
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: JSON.stringify(
+              { count: categories.length, categories },
               null,
               2
             ),

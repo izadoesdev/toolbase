@@ -24,6 +24,7 @@ export {
 
 export {
   getRelatedProducts,
+  listCategories,
   listProducts,
   searchProducts,
 } from "./search";
