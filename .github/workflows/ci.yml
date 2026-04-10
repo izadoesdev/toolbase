@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run check-types
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Test
+        run: cd apps/main && bun test
+
+      - name: Build
+        run: bun run build
+        env:
+          DATABASE_URL: "postgresql://fake:fake@localhost:5432/fake"
+          BETTER_AUTH_SECRET: "ci-build-secret-not-real"

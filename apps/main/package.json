@@ -12,6 +12,7 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "test": "bun test",
     "auth:generate": "bunx @better-auth/cli generate --config lib/auth.ts --output lib/db/schema.ts --yes"
   },
   "dependencies": {
