@@ -16,6 +16,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  cacheComponents: true,
   reactCompiler: true,
   serverExternalPackages: ["@takumi-rs/core"],
   async headers() {
