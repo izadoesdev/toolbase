@@ -58,7 +58,8 @@ export async function handleMcpRequest(request: Request): Promise<Response> {
   }
 
   const apiKey = request.headers.get("x-api-key");
-  if (!apiKey) {
+  const hasBearer = request.headers.get("authorization")?.startsWith("Bearer ");
+  if (!(apiKey || hasBearer)) {
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
       "unknown";

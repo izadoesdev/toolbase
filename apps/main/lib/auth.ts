@@ -1,15 +1,19 @@
 import { apiKey } from "@better-auth/api-key";
+import { oauthProvider } from "@better-auth/oauth-provider";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
-import { admin, bearer } from "better-auth/plugins";
+import { admin, bearer, jwt } from "better-auth/plugins";
 import { db } from "./db";
-import * as schema from "./db/schema";
+import * as schema from "./db/auth-schema";
 import { env } from "./env";
 
+const base = env.BETTER_AUTH_URL ?? "http://localhost:3000";
+
 export const auth = betterAuth({
-  baseURL: env.BETTER_AUTH_URL ?? "http://localhost:3000",
+  baseURL: base,
   secret: env.BETTER_AUTH_SECRET,
+  disabledPaths: ["/token"],
   database: drizzleAdapter(db, {
     provider: "pg",
     schema,
@@ -38,14 +42,20 @@ export const auth = betterAuth({
   plugins: [
     admin(),
     bearer(),
+    jwt(),
     nextCookies(),
     apiKey({
       defaultPrefix: "toolbase_",
-      // MCP keys need high limits — override the terrible 10/day default
       rateLimit: {
         maxRequests: 10_000,
         timeWindow: 60 * 60 * 1000, // per hour
       },
+    }),
+    oauthProvider({
+      loginPage: "/login",
+      consentPage: "/consent",
+      allowDynamicClientRegistration: true,
+      allowUnauthenticatedClientRegistration: true,
     }),
   ],
 });

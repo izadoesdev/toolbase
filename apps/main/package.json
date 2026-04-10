@@ -13,17 +13,18 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "test": "bun test",
-    "auth:generate": "bunx @better-auth/cli generate --config lib/auth.ts --output lib/db/schema.ts --yes"
+    "auth:generate": "bunx @better-auth/cli generate --config lib/auth.ts --output lib/db/auth-schema.ts --yes"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
-    "@better-auth/api-key": "^1.5.6",
+    "@better-auth/api-key": "^1.6.2",
+    "@better-auth/oauth-provider": "^1.6.2",
     "@hugeicons/core-free-icons": "^4.1.1",
     "@hugeicons/react": "^1.1.6",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@tanstack/pacer": "^0.20.1",
     "@tanstack/react-query": "^5.96.1",
-    "better-auth": "^1.5.6",
+    "better-auth": "^1.6.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.2",
