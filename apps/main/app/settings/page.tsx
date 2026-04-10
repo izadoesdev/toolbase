@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { SettingsClient } from "@/components/settings/settings-client";
 import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
+  await connection();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) {
     redirect("/");

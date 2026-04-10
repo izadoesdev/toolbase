@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { QueueList } from "@/components/admin/queue-list";
 import { auth } from "@/lib/auth";
 import { listPendingProducts } from "@/lib/toolbase/registry";
@@ -8,6 +9,7 @@ import { listPendingProducts } from "@/lib/toolbase/registry";
 export const metadata: Metadata = { title: "Admin · Review Queue" };
 
 export default async function AdminPage() {
+  await connection();
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session || session.user.role !== "admin") {

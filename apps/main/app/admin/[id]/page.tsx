@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { connection } from "next/server";
 import { ReviewDetail } from "@/components/admin/review-detail";
 import { auth } from "@/lib/auth";
 import { getPendingProduct, getProduct } from "@/lib/toolbase/registry";
@@ -31,6 +32,7 @@ export default async function AdminReviewPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await connection();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session || session.user.role !== "admin") {
     redirect("/");
