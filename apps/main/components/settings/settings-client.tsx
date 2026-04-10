@@ -155,6 +155,125 @@ function ProfileSection({ user }: { user: SettingsClientProps["user"] }) {
   );
 }
 
+// ── MCP Config section ────────────────────────────────────────────────────────
+
+function McpConfigSection() {
+  const [keys, setKeys] = useState<ApiKey[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newKey, setNewKey] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    authClient.apiKey
+      .list()
+      .then(({ data }) => setKeys((data?.apiKeys as ApiKey[]) ?? []))
+      .finally(() => setLoading(false));
+  }, []);
+
+  function provision() {
+    startTransition(async () => {
+      const res = await fetch("/api/auth/provision-key", { method: "POST" });
+      const data = await res.json();
+      if (data.key) {
+        setNewKey(data.key);
+        // Refresh key list
+        const { data: listData } = await authClient.apiKey.list();
+        setKeys((listData?.apiKeys as ApiKey[]) ?? []);
+      }
+    });
+  }
+
+  const hasKey = keys.length > 0;
+  const keyHint = hasKey
+    ? `${keys[0].prefix ?? ""}${keys[0].start ?? ""}••••`
+    : null;
+
+  const config = newKey
+    ? `{
+  "mcpServers": {
+    "toolbase": {
+      "url": "https://toolbase.sh/api/mcp",
+      "headers": {
+        "x-api-key": "${newKey}"
+      }
+    }
+  }
+}`
+    : `{
+  "mcpServers": {
+    "toolbase": {
+      "url": "https://toolbase.sh/api/mcp",
+      "headers": {
+        "x-api-key": "YOUR_API_KEY"
+      }
+    }
+  }
+}`;
+
+  return (
+    <section className="space-y-4">
+      <div>
+        <h2 className="font-semibold text-base text-foreground">
+          MCP Configuration
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Add this to your agent&apos;s MCP settings for full read + write
+          access.
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="h-40 animate-pulse rounded-xl bg-muted" />
+      ) : (
+        <>
+          {!(hasKey || newKey) && (
+            <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3">
+              <p className="flex-1 text-muted-foreground text-sm">
+                You need an API key for write access (reviews, bug reports).
+              </p>
+              <Button
+                disabled={isPending}
+                onClick={provision}
+                size="sm"
+                variant="outline"
+              >
+                {isPending ? <Spinner className="size-3.5" /> : null}
+                Create key
+              </Button>
+            </div>
+          )}
+
+          {newKey && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-950/30">
+              <p className="font-medium text-amber-800 text-sm dark:text-amber-300">
+                Key created. Copy this config now — the full key won&apos;t be
+                shown again.
+              </p>
+            </div>
+          )}
+
+          <div className="overflow-hidden rounded-xl border border-border">
+            <div className="flex items-center justify-between border-border border-b bg-muted/50 px-4 py-2.5">
+              <span className="font-mono text-[10px] text-muted-foreground">
+                mcp config
+                {keyHint && !newKey && (
+                  <span className="ml-2 text-muted-foreground/50">
+                    using {keyHint}
+                  </span>
+                )}
+              </span>
+              <CopyButton value={config} />
+            </div>
+            <pre className="p-4 font-mono text-muted-foreground text-xs leading-relaxed">
+              {config}
+            </pre>
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
 // ── API Keys section ──────────────────────────────────────────────────────────
 
 function CopyButton({ value }: { value: string }) {
@@ -568,6 +687,8 @@ export function SettingsClient({
   return (
     <div className="space-y-10">
       <ProfileSection user={user} />
+      <Divider />
+      <McpConfigSection />
       <Divider />
       <ApiKeysSection />
       <Divider />
