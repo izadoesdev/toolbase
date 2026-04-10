@@ -35,6 +35,7 @@ export interface QueryFilters {
   limit?: number;
   maturity?: string;
   mcp_only?: boolean;
+  offset?: number;
   open_source?: boolean;
   sdk_language?: string;
   self_hostable?: boolean;
@@ -283,7 +284,8 @@ export function queryProducts(
   }
 
   scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, filters?.limit ?? 10);
+  const offset = filters?.offset ?? 0;
+  return scored.slice(offset, offset + (filters?.limit ?? 10));
 }
 
 export interface RelatedHit {
