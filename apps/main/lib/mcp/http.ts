@@ -9,6 +9,8 @@ const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Headers":
     "Content-Type, Authorization, x-api-key, Cookie, mcp-session-id, Last-Event-ID, mcp-protocol-version",
   "Access-Control-Expose-Headers": "mcp-session-id, mcp-protocol-version",
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
 };
 
 /**

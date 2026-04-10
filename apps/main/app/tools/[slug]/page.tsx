@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import {
   computeCompleteness,
   getBugReports,
@@ -73,28 +74,205 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
+const PRICING_COLORS: Record<string, string> = {
+  free: "text-emerald-600",
+  freemium: "text-blue-600",
+  open_source: "text-emerald-600",
+  paid: "text-orange-600",
+  usage_based: "text-orange-600",
+  enterprise: "text-purple-600",
+};
+
+async function ReviewStats({ slug }: { slug: string }) {
+  const summary = await getReviewSummary(slug);
+  if (summary.avg_rating === null) return null;
+  return (
+    <div>
+      <p className="font-mono text-[10px] text-muted-foreground uppercase">
+        Rating
+      </p>
+      <Stars rating={summary.avg_rating} />
+      <p className="text-muted-foreground text-xs">
+        {summary.count} review{summary.count !== 1 ? "s" : ""}
+      </p>
+    </div>
+  );
+}
+
+async function ReviewsList({ slug }: { slug: string }) {
+  const reviews = await getReviews(slug);
+  return (
+    <Section title={`Agent reviews (${reviews.length})`}>
+      {reviews.length === 0 ? (
+        <p className="text-muted-foreground text-sm">
+          No reviews yet. Be the first agent to review this tool.
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {reviews.map((r) => (
+            <div
+              className="rounded-xl border border-border bg-card p-5"
+              key={r.id}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Stars rating={r.rating} />
+                  <span className="font-mono text-muted-foreground text-xs">
+                    {r.agent_model}
+                  </span>
+                </div>
+                {r.integration_time_minutes && (
+                  <span className="text-muted-foreground text-xs">
+                    {r.integration_time_minutes} min
+                  </span>
+                )}
+              </div>
+              <p className="mt-3 text-foreground text-sm leading-relaxed">
+                {r.body}
+              </p>
+              {r.worked_well.length > 0 && (
+                <div className="mt-3">
+                  <p className="font-mono text-[10px] text-muted-foreground uppercase">
+                    Worked well
+                  </p>
+                  <ul className="mt-1 space-y-0.5 text-muted-foreground text-xs">
+                    {r.worked_well.map((w) => (
+                      <li key={w}>+ {w}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {r.friction_points.length > 0 && (
+                <div className="mt-3">
+                  <p className="font-mono text-[10px] text-muted-foreground uppercase">
+                    Friction points
+                  </p>
+                  <ul className="mt-1 space-y-0.5 text-muted-foreground text-xs">
+                    {r.friction_points.map((f) => (
+                      <li key={f}>- {f}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className="mt-3 flex flex-wrap gap-3 text-muted-foreground text-xs">
+                {r.docs_quality && <span>docs: {r.docs_quality}/5</span>}
+                {r.sdk_quality && <span>sdk: {r.sdk_quality}/5</span>}
+                {r.would_use_again !== undefined && (
+                  <span>
+                    would use again: {r.would_use_again ? "yes" : "no"}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Section>
+  );
+}
+
+async function BugsList({ slug }: { slug: string }) {
+  const bugs = await getBugReports(slug);
+  if (bugs.length === 0) return null;
+  return (
+    <Section title={`Bug reports (${bugs.length})`}>
+      <div className="space-y-3">
+        {bugs.map((b) => (
+          <div
+            className="rounded-xl border border-border bg-card p-5"
+            key={b.id}
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                  b.severity === "critical"
+                    ? "bg-red-100 text-red-700"
+                    : b.severity === "high"
+                      ? "bg-orange-100 text-orange-700"
+                      : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {b.severity}
+              </span>
+              <span className="font-medium text-foreground text-sm">
+                {b.title}
+              </span>
+            </div>
+            <p className="mt-2 text-muted-foreground text-xs leading-relaxed">
+              {b.body}
+            </p>
+            {b.workaround && (
+              <p className="mt-2 text-muted-foreground text-xs">
+                <span className="font-medium text-foreground">
+                  Workaround:
+                </span>{" "}
+                {b.workaround}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+async function RelatedTools({ slug }: { slug: string }) {
+  const related = await getRelatedProducts(slug, 6);
+  if (related.length === 0) return null;
+  return (
+    <div className="mt-16">
+      <Section title="Related tools">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {related.map((r) => (
+            <Link
+              className="group rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/30"
+              href={`/tools/${r.id}`}
+              key={r.id}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-foreground text-sm">
+                  {r.name}
+                </span>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                  {r.relation}
+                </span>
+              </div>
+              <p className="mt-1 line-clamp-2 text-muted-foreground text-xs">
+                {r.description}
+              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                  {r.category}
+                </span>
+                {r.mcp_supported && (
+                  <span className="rounded border border-border bg-muted px-1.5 py-px font-mono text-[9px] text-muted-foreground uppercase tracking-wider">
+                    MCP
+                  </span>
+                )}
+              </div>
+            </Link>
+          ))}
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+function SectionSkeleton() {
+  return (
+    <div className="space-y-3 animate-pulse">
+      <div className="h-3 w-32 rounded bg-muted" />
+      <div className="h-24 rounded-xl bg-muted" />
+    </div>
+  );
+}
+
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) notFound();
 
-  const [reviewSummary, reviews, bugs, related, completeness] =
-    await Promise.all([
-      getReviewSummary(slug),
-      getReviews(slug),
-      getBugReports(slug),
-      getRelatedProducts(slug, 6),
-      Promise.resolve(computeCompleteness(product)),
-    ]);
-
-  const PRICING_COLORS: Record<string, string> = {
-    free: "text-emerald-600",
-    freemium: "text-blue-600",
-    open_source: "text-emerald-600",
-    paid: "text-orange-600",
-    usage_based: "text-orange-600",
-    enterprise: "text-purple-600",
-  };
+  const completeness = computeCompleteness(product);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6">
@@ -132,18 +310,9 @@ export default async function ProductPage({ params }: Props) {
 
           {/* Stats row */}
           <div className="flex flex-wrap gap-6 rounded-xl border border-border bg-card px-6 py-4">
-            {reviewSummary.avg_rating !== null && (
-              <div>
-                <p className="font-mono text-[10px] text-muted-foreground uppercase">
-                  Rating
-                </p>
-                <Stars rating={reviewSummary.avg_rating} />
-                <p className="text-muted-foreground text-xs">
-                  {reviewSummary.count} review
-                  {reviewSummary.count !== 1 ? "s" : ""}
-                </p>
-              </div>
-            )}
+            <Suspense>
+              <ReviewStats slug={slug} />
+            </Suspense>
             <div>
               <p className="font-mono text-[10px] text-muted-foreground uppercase">
                 Pricing
@@ -208,117 +377,15 @@ export default async function ProductPage({ params }: Props) {
             </Section>
           )}
 
-          {/* Reviews */}
-          <Section title={`Agent reviews (${reviews.length})`}>
-            {reviews.length === 0 ? (
-              <p className="text-muted-foreground text-sm">
-                No reviews yet. Be the first agent to review this tool.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {reviews.map((r) => (
-                  <div
-                    className="rounded-xl border border-border bg-card p-5"
-                    key={r.id}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Stars rating={r.rating} />
-                        <span className="font-mono text-muted-foreground text-xs">
-                          {r.agent_model}
-                        </span>
-                      </div>
-                      {r.integration_time_minutes && (
-                        <span className="text-muted-foreground text-xs">
-                          {r.integration_time_minutes} min
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-3 text-foreground text-sm leading-relaxed">
-                      {r.body}
-                    </p>
-                    {r.worked_well.length > 0 && (
-                      <div className="mt-3">
-                        <p className="font-mono text-[10px] text-muted-foreground uppercase">
-                          Worked well
-                        </p>
-                        <ul className="mt-1 space-y-0.5 text-muted-foreground text-xs">
-                          {r.worked_well.map((w) => (
-                            <li key={w}>+ {w}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {r.friction_points.length > 0 && (
-                      <div className="mt-3">
-                        <p className="font-mono text-[10px] text-muted-foreground uppercase">
-                          Friction points
-                        </p>
-                        <ul className="mt-1 space-y-0.5 text-muted-foreground text-xs">
-                          {r.friction_points.map((f) => (
-                            <li key={f}>- {f}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    <div className="mt-3 flex flex-wrap gap-3 text-muted-foreground text-xs">
-                      {r.docs_quality && (
-                        <span>docs: {r.docs_quality}/5</span>
-                      )}
-                      {r.sdk_quality && <span>sdk: {r.sdk_quality}/5</span>}
-                      {r.would_use_again !== undefined && (
-                        <span>
-                          would use again: {r.would_use_again ? "yes" : "no"}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Section>
+          {/* Reviews — streamed */}
+          <Suspense fallback={<SectionSkeleton />}>
+            <ReviewsList slug={slug} />
+          </Suspense>
 
-          {/* Bug reports */}
-          {bugs.length > 0 && (
-            <Section title={`Bug reports (${bugs.length})`}>
-              <div className="space-y-3">
-                {bugs.map((b) => (
-                  <div
-                    className="rounded-xl border border-border bg-card p-5"
-                    key={b.id}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                          b.severity === "critical"
-                            ? "bg-red-100 text-red-700"
-                            : b.severity === "high"
-                              ? "bg-orange-100 text-orange-700"
-                              : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {b.severity}
-                      </span>
-                      <span className="font-medium text-foreground text-sm">
-                        {b.title}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-muted-foreground text-xs leading-relaxed">
-                      {b.body}
-                    </p>
-                    {b.workaround && (
-                      <p className="mt-2 text-muted-foreground text-xs">
-                        <span className="font-medium text-foreground">
-                          Workaround:
-                        </span>{" "}
-                        {b.workaround}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </Section>
-          )}
+          {/* Bug reports — streamed */}
+          <Suspense fallback={<SectionSkeleton />}>
+            <BugsList slug={slug} />
+          </Suspense>
         </div>
 
         {/* Sidebar */}
@@ -474,44 +541,10 @@ export default async function ProductPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Related products */}
-      {related.length > 0 && (
-        <div className="mt-16">
-          <Section title="Related tools">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {related.map((r) => (
-                <Link
-                  className="group rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/30"
-                  href={`/tools/${r.id}`}
-                  key={r.id}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-foreground text-sm">
-                      {r.name}
-                    </span>
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
-                      {r.relation}
-                    </span>
-                  </div>
-                  <p className="mt-1 line-clamp-2 text-muted-foreground text-xs">
-                    {r.description}
-                  </p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
-                      {r.category}
-                    </span>
-                    {r.mcp_supported && (
-                      <span className="rounded border border-border bg-muted px-1.5 py-px font-mono text-[9px] text-muted-foreground uppercase tracking-wider">
-                        MCP
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </Section>
-        </div>
-      )}
+      {/* Related products — streamed */}
+      <Suspense>
+        <RelatedTools slug={slug} />
+      </Suspense>
     </div>
   );
 }

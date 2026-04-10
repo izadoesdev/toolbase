@@ -1,6 +1,12 @@
 import { headers } from "next/headers";
+import { z } from "zod";
 import { isAdmin } from "@/lib/toolbase/permissions";
 import { approveProduct, rejectProduct } from "@/lib/toolbase/registry";
+
+const bodySchema = z.object({
+  action: z.enum(["approve", "reject"]),
+  resolutions: z.record(z.string(), z.enum(["current", "proposed"])).optional(),
+});
 
 export async function POST(
   request: Request,
@@ -13,20 +19,22 @@ export async function POST(
 
   const { id } = await params;
 
-  let body: { action?: unknown; resolutions?: unknown };
+  let raw: unknown;
   try {
-    body = (await request.json()) as {
-      action?: unknown;
-      resolutions?: unknown;
-    };
+    raw = await request.json();
   } catch {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { action, resolutions } = body as {
-    action: "approve" | "reject";
-    resolutions?: Record<string, "current" | "proposed">;
-  };
+  const parsed = bodySchema.safeParse(raw);
+  if (!parsed.success) {
+    return Response.json(
+      { error: "Invalid request body", details: parsed.error.issues },
+      { status: 400 }
+    );
+  }
+
+  const { action, resolutions } = parsed.data;
 
   if (action === "approve") {
     const result = await approveProduct(id, resolutions);
