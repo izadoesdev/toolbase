@@ -9,11 +9,10 @@ interface FooterLink {
 
 const FOOTER_LINKS: Record<string, FooterLink[]> = {
   Product: [
-    { href: "/#registry", label: "Browse catalog" },
+    { href: "/tools", label: "Browse catalog" },
   ],
   Developers: [
-    { href: "/api/mcp", label: "MCP endpoint" },
-    { href: "/api", label: "API info" },
+    { href: "https://github.com/izadoesdev/toolbase", label: "GitHub", external: true },
   ],
   Company: [
     { href: "https://github.com/izadoesdev", label: "GitHub", external: true },

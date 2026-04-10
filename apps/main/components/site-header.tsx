@@ -3,9 +3,7 @@ import { SessionControls } from "@/components/auth/session-controls";
 import { BRAND_NAME, BrandLogo } from "@/components/brand-logo";
 
 const NAV_LINKS = [
-  { href: "/#registry", label: "Browse" },
-  { href: "/api/mcp", label: "MCP" },
-  { href: "/api", label: "API" },
+  { href: "/tools", label: "Browse" },
 ];
 
 export function SiteHeader() {
