@@ -1,5 +1,6 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
+import * as authSchema from "@/lib/db/auth-schema";
 import * as schema from "@/lib/db/schema";
 import { env } from "@/lib/env";
 
@@ -10,4 +11,6 @@ const pool = new Pool({
   connectionTimeoutMillis: 5000,
 });
 
-export const db = drizzle(pool, { schema });
+const fullSchema = { ...schema, ...authSchema };
+
+export const db = drizzle(pool, { schema: fullSchema });

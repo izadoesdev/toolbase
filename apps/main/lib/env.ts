@@ -3,12 +3,12 @@ import { z } from "zod";
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   BETTER_AUTH_SECRET: z.string().min(1, "BETTER_AUTH_SECRET is required"),
-  BETTER_AUTH_URL: z.string().optional(),
   VOYAGE_API_KEY: z.string().optional(),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GITHUB_CLIENT_ID: z.string().optional(),
   GITHUB_CLIENT_SECRET: z.string().optional(),
+  VERCEL_URL: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

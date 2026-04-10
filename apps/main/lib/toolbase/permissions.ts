@@ -25,7 +25,7 @@ async function getUserIdFromBearer(headers: Headers): Promise<string | null> {
   }
   const accessToken = authorization.slice(7);
   try {
-    const base = env.BETTER_AUTH_URL ?? "http://localhost:3000";
+    const base = env.VERCEL_URL ?? "http://localhost:3000";
     const payload = await serverClient.verifyAccessToken(accessToken, {
       verifyOptions: {
         audience: `${base}/api/mcp`,
