@@ -1,50 +1,43 @@
-import { McpServerIcon, ToolboxIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { cn } from "@/lib/utils";
 
 export const BRAND_NAME = "Toolbase";
 
 interface BrandLogoProps {
   className?: string;
-  iconClassName?: string;
   size?: "sm" | "md";
 }
 
-export function BrandLogo({
-  className,
-  iconClassName,
-  size = "md",
-}: BrandLogoProps) {
-  const box = size === "sm" ? "size-8" : "size-10";
-  const main = size === "sm" ? "size-[18px]" : "size-[22px]";
-  const badge = size === "sm" ? "size-3.5" : "size-4";
-
+export function BrandLogo({ className, size = "md" }: BrandLogoProps) {
+  const s = size === "sm" ? 20 : 24;
   return (
-    <span
+    <svg
       aria-hidden
-      className={cn(
-        "relative inline-flex shrink-0 items-center justify-center rounded-xl border border-border bg-muted",
-        box,
-        className
-      )}
+      className={cn("shrink-0 text-foreground", className)}
+      fill="none"
+      height={s}
+      viewBox="0 0 24 24"
+      width={s}
     >
-      <HugeiconsIcon
-        className={cn("text-foreground", main, iconClassName)}
-        icon={ToolboxIcon}
-        strokeWidth={2}
+      <title>Toolbase</title>
+      <path
+        d="M3 7l9-4 9 4v10l-9 4-9-4V7z"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
       />
-      <span
-        className={cn(
-          "absolute -right-0.5 -bottom-0.5 inline-flex items-center justify-center rounded-md border border-border bg-background",
-          badge
-        )}
-      >
-        <HugeiconsIcon
-          className="size-[65%] text-primary"
-          icon={McpServerIcon}
-          strokeWidth={2}
-        />
-      </span>
-    </span>
+      <path
+        d="M3 7l9 4 9-4"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+      />
+      <path
+        d="M12 11v10"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth={1.5}
+      />
+      <circle cx={12} cy={14} fill="currentColor" r={1.5} />
+    </svg>
   );
 }

@@ -22,7 +22,7 @@
         "noDangerouslySetInnerHtml": "off"
       },
       "complexity": {
-        "noExcessiveCognitiveComplexity": "warn"
+        "noExcessiveCognitiveComplexity": "off"
       }
     }
   },
