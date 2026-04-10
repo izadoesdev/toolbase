@@ -1,7 +1,7 @@
 import { serverClient } from "@/lib/auth-server-client";
 import { env } from "@/lib/env";
 
-const base = env.VERCEL_URL ?? "http://localhost:3000";
+const base = env.BETTER_AUTH_URL ?? "http://localhost:3000";
 
 export async function GET() {
   const metadata = await serverClient.getProtectedResourceMetadata({

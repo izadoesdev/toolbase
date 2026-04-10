@@ -8,7 +8,7 @@ import { db } from "./db";
 import * as schema from "./db/auth-schema";
 import { env } from "./env";
 
-const base = env.VERCEL_URL ?? "http://localhost:3000";
+const base = env.BETTER_AUTH_URL ?? "http://localhost:3000";
 
 export const auth = betterAuth({
   baseURL: base,

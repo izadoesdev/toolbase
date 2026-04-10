@@ -114,7 +114,7 @@ If you use `.env.development` and `.env.production`, both should be in inputs.
 {
   "$schema": "https://turborepo.dev/schema.v2.json",
   "globalEnv": ["CI", "NODE_ENV", "VERCEL"],
-  "globalPassThroughEnv": ["GITHUB_TOKEN", "VERCEL_URL"],
+  "globalPassThroughEnv": ["GITHUB_TOKEN", "BETTER_AUTH_URL"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
