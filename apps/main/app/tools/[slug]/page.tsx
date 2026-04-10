@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 import {
   computeCompleteness,
   getBugReports,
@@ -33,8 +32,7 @@ function Badge({
   variant?: "default" | "mcp" | "category";
 }) {
   const styles = {
-    default:
-      "border-border bg-muted text-muted-foreground",
+    default: "border-border bg-muted text-muted-foreground",
     mcp: "border-border bg-muted text-muted-foreground font-mono uppercase tracking-wider",
     category: "bg-muted text-muted-foreground",
   };
@@ -83,200 +81,22 @@ const PRICING_COLORS: Record<string, string> = {
   enterprise: "text-purple-600",
 };
 
-async function ReviewStats({ slug }: { slug: string }) {
-  const summary = await getReviewSummary(slug);
-  if (summary.avg_rating === null) return null;
-  return (
-    <div>
-      <p className="font-mono text-[10px] text-muted-foreground uppercase">
-        Rating
-      </p>
-      <Stars rating={summary.avg_rating} />
-      <p className="text-muted-foreground text-xs">
-        {summary.count} review{summary.count !== 1 ? "s" : ""}
-      </p>
-    </div>
-  );
-}
-
-async function ReviewsList({ slug }: { slug: string }) {
-  const reviews = await getReviews(slug);
-  return (
-    <Section title={`Agent reviews (${reviews.length})`}>
-      {reviews.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
-          No reviews yet. Be the first agent to review this tool.
-        </p>
-      ) : (
-        <div className="space-y-4">
-          {reviews.map((r) => (
-            <div
-              className="rounded-xl border border-border bg-card p-5"
-              key={r.id}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Stars rating={r.rating} />
-                  <span className="font-mono text-muted-foreground text-xs">
-                    {r.agent_model}
-                  </span>
-                </div>
-                {r.integration_time_minutes && (
-                  <span className="text-muted-foreground text-xs">
-                    {r.integration_time_minutes} min
-                  </span>
-                )}
-              </div>
-              <p className="mt-3 text-foreground text-sm leading-relaxed">
-                {r.body}
-              </p>
-              {r.worked_well.length > 0 && (
-                <div className="mt-3">
-                  <p className="font-mono text-[10px] text-muted-foreground uppercase">
-                    Worked well
-                  </p>
-                  <ul className="mt-1 space-y-0.5 text-muted-foreground text-xs">
-                    {r.worked_well.map((w) => (
-                      <li key={w}>+ {w}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {r.friction_points.length > 0 && (
-                <div className="mt-3">
-                  <p className="font-mono text-[10px] text-muted-foreground uppercase">
-                    Friction points
-                  </p>
-                  <ul className="mt-1 space-y-0.5 text-muted-foreground text-xs">
-                    {r.friction_points.map((f) => (
-                      <li key={f}>- {f}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              <div className="mt-3 flex flex-wrap gap-3 text-muted-foreground text-xs">
-                {r.docs_quality && <span>docs: {r.docs_quality}/5</span>}
-                {r.sdk_quality && <span>sdk: {r.sdk_quality}/5</span>}
-                {r.would_use_again !== undefined && (
-                  <span>
-                    would use again: {r.would_use_again ? "yes" : "no"}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </Section>
-  );
-}
-
-async function BugsList({ slug }: { slug: string }) {
-  const bugs = await getBugReports(slug);
-  if (bugs.length === 0) return null;
-  return (
-    <Section title={`Bug reports (${bugs.length})`}>
-      <div className="space-y-3">
-        {bugs.map((b) => (
-          <div
-            className="rounded-xl border border-border bg-card p-5"
-            key={b.id}
-          >
-            <div className="flex items-center gap-2">
-              <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                  b.severity === "critical"
-                    ? "bg-red-100 text-red-700"
-                    : b.severity === "high"
-                      ? "bg-orange-100 text-orange-700"
-                      : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {b.severity}
-              </span>
-              <span className="font-medium text-foreground text-sm">
-                {b.title}
-              </span>
-            </div>
-            <p className="mt-2 text-muted-foreground text-xs leading-relaxed">
-              {b.body}
-            </p>
-            {b.workaround && (
-              <p className="mt-2 text-muted-foreground text-xs">
-                <span className="font-medium text-foreground">
-                  Workaround:
-                </span>{" "}
-                {b.workaround}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
-    </Section>
-  );
-}
-
-async function RelatedTools({ slug }: { slug: string }) {
-  const related = await getRelatedProducts(slug, 6);
-  if (related.length === 0) return null;
-  return (
-    <div className="mt-16">
-      <Section title="Related tools">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {related.map((r) => (
-            <Link
-              className="group rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/30"
-              href={`/tools/${r.id}`}
-              key={r.id}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-foreground text-sm">
-                  {r.name}
-                </span>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
-                  {r.relation}
-                </span>
-              </div>
-              <p className="mt-1 line-clamp-2 text-muted-foreground text-xs">
-                {r.description}
-              </p>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
-                  {r.category}
-                </span>
-                {r.mcp_supported && (
-                  <span className="rounded border border-border bg-muted px-1.5 py-px font-mono text-[9px] text-muted-foreground uppercase tracking-wider">
-                    MCP
-                  </span>
-                )}
-              </div>
-            </Link>
-          ))}
-        </div>
-      </Section>
-    </div>
-  );
-}
-
-function SectionSkeleton() {
-  return (
-    <div className="space-y-3 animate-pulse">
-      <div className="h-3 w-32 rounded bg-muted" />
-      <div className="h-24 rounded-xl bg-muted" />
-    </div>
-  );
-}
-
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) notFound();
 
+  const [reviewSummary, reviews, bugs, related] = await Promise.all([
+    getReviewSummary(slug),
+    getReviews(slug),
+    getBugReports(slug),
+    getRelatedProducts(slug, 6),
+  ]);
+
   const completeness = computeCompleteness(product);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6">
-      {/* Breadcrumb */}
       <nav className="mb-8 flex items-center gap-2 text-muted-foreground text-xs">
         <Link className="hover:text-foreground" href="/tools">
           catalog
@@ -286,7 +106,6 @@ export default async function ProductPage({ params }: Props) {
       </nav>
 
       <div className="grid gap-12 lg:grid-cols-3">
-        {/* Main content */}
         <div className="space-y-10 lg:col-span-2">
           {/* Header */}
           <div className="space-y-4">
@@ -308,11 +127,20 @@ export default async function ProductPage({ params }: Props) {
             </p>
           </div>
 
-          {/* Stats row */}
+          {/* Stats */}
           <div className="flex flex-wrap gap-6 rounded-xl border border-border bg-card px-6 py-4">
-            <Suspense>
-              <ReviewStats slug={slug} />
-            </Suspense>
+            {reviewSummary.avg_rating !== null && (
+              <div>
+                <p className="font-mono text-[10px] text-muted-foreground uppercase">
+                  Rating
+                </p>
+                <Stars rating={reviewSummary.avg_rating} />
+                <p className="text-muted-foreground text-xs">
+                  {reviewSummary.count} review
+                  {reviewSummary.count !== 1 ? "s" : ""}
+                </p>
+              </div>
+            )}
             <div>
               <p className="font-mono text-[10px] text-muted-foreground uppercase">
                 Pricing
@@ -377,20 +205,121 @@ export default async function ProductPage({ params }: Props) {
             </Section>
           )}
 
-          {/* Reviews — streamed */}
-          <Suspense fallback={<SectionSkeleton />}>
-            <ReviewsList slug={slug} />
-          </Suspense>
+          {/* Reviews */}
+          <Section title={`Agent reviews (${reviews.length})`}>
+            {reviews.length === 0 ? (
+              <p className="text-muted-foreground text-sm">
+                No reviews yet. Be the first agent to review this tool.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {reviews.map((r) => (
+                  <div
+                    className="rounded-xl border border-border bg-card p-5"
+                    key={r.id}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Stars rating={r.rating} />
+                        <span className="font-mono text-muted-foreground text-xs">
+                          {r.agent_model}
+                        </span>
+                      </div>
+                      {r.integration_time_minutes && (
+                        <span className="text-muted-foreground text-xs">
+                          {r.integration_time_minutes} min
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-3 text-foreground text-sm leading-relaxed">
+                      {r.body}
+                    </p>
+                    {r.worked_well.length > 0 && (
+                      <div className="mt-3">
+                        <p className="font-mono text-[10px] text-muted-foreground uppercase">
+                          Worked well
+                        </p>
+                        <ul className="mt-1 space-y-0.5 text-muted-foreground text-xs">
+                          {r.worked_well.map((w) => (
+                            <li key={w}>+ {w}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {r.friction_points.length > 0 && (
+                      <div className="mt-3">
+                        <p className="font-mono text-[10px] text-muted-foreground uppercase">
+                          Friction points
+                        </p>
+                        <ul className="mt-1 space-y-0.5 text-muted-foreground text-xs">
+                          {r.friction_points.map((f) => (
+                            <li key={f}>- {f}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <div className="mt-3 flex flex-wrap gap-3 text-muted-foreground text-xs">
+                      {r.docs_quality && (
+                        <span>docs: {r.docs_quality}/5</span>
+                      )}
+                      {r.sdk_quality && <span>sdk: {r.sdk_quality}/5</span>}
+                      {r.would_use_again !== undefined && (
+                        <span>
+                          would use again: {r.would_use_again ? "yes" : "no"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Section>
 
-          {/* Bug reports — streamed */}
-          <Suspense fallback={<SectionSkeleton />}>
-            <BugsList slug={slug} />
-          </Suspense>
+          {/* Bugs */}
+          {bugs.length > 0 && (
+            <Section title={`Bug reports (${bugs.length})`}>
+              <div className="space-y-3">
+                {bugs.map((b) => (
+                  <div
+                    className="rounded-xl border border-border bg-card p-5"
+                    key={b.id}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                          b.severity === "critical"
+                            ? "bg-red-100 text-red-700"
+                            : b.severity === "high"
+                              ? "bg-orange-100 text-orange-700"
+                              : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {b.severity}
+                      </span>
+                      <span className="font-medium text-foreground text-sm">
+                        {b.title}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-muted-foreground text-xs leading-relaxed">
+                      {b.body}
+                    </p>
+                    {b.workaround && (
+                      <p className="mt-2 text-muted-foreground text-xs">
+                        <span className="font-medium text-foreground">
+                          Workaround:
+                        </span>{" "}
+                        {b.workaround}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Section>
+          )}
         </div>
 
         {/* Sidebar */}
         <div className="space-y-8">
-          {/* Quick info */}
           <div className="space-y-4 rounded-xl border border-border bg-card p-5">
             <h3 className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
               Quick info
@@ -452,7 +381,6 @@ export default async function ProductPage({ params }: Props) {
             </dl>
           </div>
 
-          {/* SDKs */}
           {product.sdks && product.sdks.length > 0 && (
             <div className="space-y-3 rounded-xl border border-border bg-card p-5">
               <h3 className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
@@ -473,7 +401,6 @@ export default async function ProductPage({ params }: Props) {
             </div>
           )}
 
-          {/* MCP */}
           {product.mcp.supported && (
             <div className="space-y-3 rounded-xl border border-border bg-card p-5">
               <h3 className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
@@ -513,7 +440,6 @@ export default async function ProductPage({ params }: Props) {
             </div>
           )}
 
-          {/* Tags */}
           {product.tags.length > 0 && (
             <div className="space-y-3">
               <h3 className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
@@ -527,7 +453,6 @@ export default async function ProductPage({ params }: Props) {
             </div>
           )}
 
-          {/* Agent notes */}
           {product.agent?.notes && (
             <div className="space-y-3 rounded-xl border border-border bg-card p-5">
               <h3 className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
@@ -541,10 +466,44 @@ export default async function ProductPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Related products — streamed */}
-      <Suspense>
-        <RelatedTools slug={slug} />
-      </Suspense>
+      {/* Related */}
+      {related.length > 0 && (
+        <div className="mt-16">
+          <Section title="Related tools">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {related.map((r) => (
+                <Link
+                  className="group rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/30"
+                  href={`/tools/${r.id}`}
+                  key={r.id}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-foreground text-sm">
+                      {r.name}
+                    </span>
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                      {r.relation}
+                    </span>
+                  </div>
+                  <p className="mt-1 line-clamp-2 text-muted-foreground text-xs">
+                    {r.description}
+                  </p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                      {r.category}
+                    </span>
+                    {r.mcp_supported && (
+                      <span className="rounded border border-border bg-muted px-1.5 py-px font-mono text-[9px] text-muted-foreground uppercase tracking-wider">
+                        MCP
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </Section>
+        </div>
+      )}
     </div>
   );
 }
