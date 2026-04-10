@@ -78,8 +78,7 @@ export function SiteFooter() {
 
         <div className="mt-12 flex flex-col gap-2 border-border border-t pt-8 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-muted-foreground text-xs">
-            © {new Date().getFullYear()} {BRAND_NAME}. Built for agents, by
-            agents.
+            © 2025 {BRAND_NAME}. Built for agents, by agents.
           </p>
           <p className="font-mono text-muted-foreground text-xs">
             v0.5.0 · MCP Streamable HTTP
