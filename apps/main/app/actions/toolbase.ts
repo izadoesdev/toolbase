@@ -19,6 +19,9 @@ export async function searchToolbase(
     filters.offset = offset;
   }
   return {
-    results: await searchProducts(q, Object.keys(filters).length > 0 ? filters : undefined),
+    results: await searchProducts(
+      q,
+      Object.keys(filters).length > 0 ? filters : undefined
+    ),
   };
 }

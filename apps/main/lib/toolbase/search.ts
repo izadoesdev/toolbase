@@ -9,9 +9,10 @@ import { findRelatedProducts, productToHit, queryProducts } from "./match";
 import type { Product } from "./schema";
 import { productSchema } from "./schema";
 
-export async function listProducts(
-  opts?: { limit?: number; offset?: number }
-): Promise<Product[]> {
+export async function listProducts(opts?: {
+  limit?: number;
+  offset?: number;
+}): Promise<Product[]> {
   "use cache";
   cacheLife("minutes");
   cacheTag("products");

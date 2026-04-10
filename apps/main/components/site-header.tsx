@@ -2,9 +2,7 @@ import Link from "next/link";
 import { SessionControls } from "@/components/auth/session-controls";
 import { BRAND_NAME, BrandLogo } from "@/components/brand-logo";
 
-const NAV_LINKS = [
-  { href: "/tools", label: "Browse" },
-];
+const NAV_LINKS = [{ href: "/tools", label: "Browse" }];
 
 export function SiteHeader() {
   return (

@@ -1,6 +1,5 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-/** biome-ignore lint/performance/noNamespaceImport: Drizzle schema is a namespace barrel  DO NOT REMOVE THIS*/
 import * as schema from "@/lib/db/schema";
 import { env } from "@/lib/env";
 

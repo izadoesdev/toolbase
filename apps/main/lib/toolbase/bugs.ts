@@ -2,9 +2,9 @@ import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { db } from "@/lib/db";
 import { bugReport as bugReportTable } from "@/lib/db/schema";
+import { getProduct } from "./products";
 import type { BugReport, BugReportInput } from "./schema";
 import { bugReportSchema } from "./schema";
-import { getProduct } from "./products";
 
 export async function submitBugReport(
   input: BugReportInput

@@ -33,9 +33,7 @@ export function registerReadTools(server: McpServer): void {
             .int()
             .min(0)
             .optional()
-            .describe(
-              "Number of results to skip (for pagination, default 0)"
-            )
+            .describe("Number of results to skip (for pagination, default 0)")
         ),
       },
       annotations: {
@@ -111,9 +109,7 @@ export function registerReadTools(server: McpServer): void {
             .int()
             .min(0)
             .optional()
-            .describe(
-              "Number of results to skip (for pagination, default 0)"
-            )
+            .describe("Number of results to skip (for pagination, default 0)")
         ),
       },
       annotations: {

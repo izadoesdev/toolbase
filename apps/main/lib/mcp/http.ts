@@ -67,7 +67,9 @@ export async function handleMcpRequest(request: Request): Promise<Response> {
       return withCors(
         new Response("Too Many Requests", {
           status: 429,
-          headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) },
+          headers: {
+            "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+          },
         })
       );
     }

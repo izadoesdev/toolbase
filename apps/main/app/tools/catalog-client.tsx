@@ -188,7 +188,7 @@ export function CatalogClient({
       {/* Results */}
       <div>
         <p className="mb-4 text-muted-foreground text-xs">
-          {filtered.length} tool{filtered.length !== 1 ? "s" : ""}
+          {filtered.length} tool{filtered.length === 1 ? "" : "s"}
         </p>
         {filtered.length === 0 ? (
           <div className="py-12 text-center">

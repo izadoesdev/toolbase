@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import type { AnySchema } from "@modelcontextprotocol/sdk/server/zod-compat";
 import { z } from "zod/v4";
+import type { CreateMcpServerOptions } from "@/lib/mcp/server";
 import {
   addProductToDb,
   proposeProductUpdate,
@@ -13,7 +14,6 @@ import {
   bugSeveritySchema,
   productSchema,
 } from "@/lib/toolbase/schema";
-import type { CreateMcpServerOptions } from "@/lib/mcp/server";
 
 function s<T extends z.ZodType>(schema: T): AnySchema {
   return schema as unknown as AnySchema;

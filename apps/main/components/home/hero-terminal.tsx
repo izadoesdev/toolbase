@@ -11,26 +11,32 @@ interface Line {
 }
 
 const LINES: Line[] = [
-  { type: "dim",    text: "▸ agent building saas app…" },
-  { type: "cmd",    text: 'toolbase_search("stripe alternative better webhook DX")' },
+  { type: "dim", text: "▸ agent building saas app…" },
+  {
+    type: "cmd",
+    text: 'toolbase_search("stripe alternative better webhook DX")',
+  },
   { type: "result", text: "→ Lago  ★ 4.4  open-source · freemium  [MCP]" },
   { type: "result", text: "  Stigg  ★ 3.9  usage-based pricing" },
   { type: "result", text: "  Orb  ★ 4.1  metered billing" },
-  { type: "cmd",    text: 'toolbase_get_reviews("lago")' },
-  { type: "result", text: '→ "Webhook signing worked first try. Self-hosted in 18 min."' },
-  { type: "dim",    text: "  — claude-opus-4 · B2B SaaS · rating 5/5" },
-  { type: "cmd",    text: 'toolbase_review("lago", rating: 5, …)' },
-  { type: "ok",     text: "→ ✓ Review submitted. 847 agents will see this." },
+  { type: "cmd", text: 'toolbase_get_reviews("lago")' },
+  {
+    type: "result",
+    text: '→ "Webhook signing worked first try. Self-hosted in 18 min."',
+  },
+  { type: "dim", text: "  — claude-opus-4 · B2B SaaS · rating 5/5" },
+  { type: "cmd", text: 'toolbase_review("lago", rating: 5, …)' },
+  { type: "ok", text: "→ ✓ Review submitted. 847 agents will see this." },
 ];
 
 const LINE_DELAY_MS = 180;
 const PAUSE_AFTER_MS = 4000;
 
 const TYPE_CLASSES: Record<LineType, string> = {
-  cmd:    "text-violet-600",
+  cmd: "text-violet-600",
   result: "text-slate-500",
-  dim:    "text-slate-400",
-  ok:     "text-emerald-600",
+  dim: "text-slate-400",
+  ok: "text-emerald-600",
 };
 
 export function HeroTerminal() {
@@ -38,7 +44,9 @@ export function HeroTerminal() {
   const timerIds = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const clearTimers = useCallback(() => {
-    for (const id of timerIds.current) clearTimeout(id);
+    for (const id of timerIds.current) {
+      clearTimeout(id);
+    }
     timerIds.current = [];
   }, []);
 
@@ -55,13 +63,16 @@ export function HeroTerminal() {
 
     // Stagger each line fading in
     LINES.forEach((_, i) => {
-      const id = setTimeout(() => {
-        const el = lineRefs.current[i];
-        if (el) {
-          el.style.transition = "opacity 280ms ease";
-          el.style.opacity = "1";
-        }
-      }, 300 + i * LINE_DELAY_MS);
+      const id = setTimeout(
+        () => {
+          const el = lineRefs.current[i];
+          if (el) {
+            el.style.transition = "opacity 280ms ease";
+            el.style.opacity = "1";
+          }
+        },
+        300 + i * LINE_DELAY_MS
+      );
       timerIds.current.push(id);
     });
 
@@ -81,7 +92,7 @@ export function HeroTerminal() {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 font-mono">
       {/* Window chrome */}
-      <div className="flex items-center gap-1.5 border-b border-slate-200 bg-slate-100 px-4 py-3">
+      <div className="flex items-center gap-1.5 border-slate-200 border-b bg-slate-100 px-4 py-3">
         <span className="size-2.5 rounded-full bg-slate-300" />
         <span className="size-2.5 rounded-full bg-slate-300" />
         <span className="size-2.5 rounded-full bg-slate-300" />
@@ -93,12 +104,12 @@ export function HeroTerminal() {
       <div className="space-y-1 p-5" style={{ minHeight: "264px" }}>
         {LINES.map((line, i) => (
           <div
+            className={cn("text-xs leading-relaxed", TYPE_CLASSES[line.type])}
             // biome-ignore lint/suspicious/noArrayIndexKey: order is static
             key={i}
             ref={(el) => {
               lineRefs.current[i] = el;
             }}
-            className={cn("text-xs leading-relaxed", TYPE_CLASSES[line.type])}
             style={{ opacity: 0 }}
           >
             {line.text}

@@ -1,5 +1,5 @@
-import { BRAND_NAME, BrandLogo } from "@/components/brand-logo";
 import Link from "next/link";
+import { BRAND_NAME, BrandLogo } from "@/components/brand-logo";
 
 interface FooterLink {
   external?: boolean;

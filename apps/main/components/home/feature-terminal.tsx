@@ -14,16 +14,16 @@ const LINE_DELAY_MS = 200;
 const PAUSE_AFTER_MS = 5000;
 
 const TYPE_CLASSES: Record<LineType, string> = {
-  cmd:    "text-violet-600",
+  cmd: "text-violet-600",
   result: "text-slate-500",
-  dim:    "text-slate-400",
-  ok:     "text-emerald-600",
-  blank:  "",
+  dim: "text-slate-400",
+  ok: "text-emerald-600",
+  blank: "",
 };
 
 interface FeatureTerminalProps {
-  lines: TerminalLine[];
   className?: string;
+  lines: TerminalLine[];
 }
 
 export function FeatureTerminal({ lines, className }: FeatureTerminalProps) {
@@ -33,7 +33,9 @@ export function FeatureTerminal({ lines, className }: FeatureTerminalProps) {
   const started = useRef(false);
 
   const clearTimers = useCallback(() => {
-    for (const id of timerIds.current) clearTimeout(id);
+    for (const id of timerIds.current) {
+      clearTimeout(id);
+    }
     timerIds.current = [];
   }, []);
 
@@ -48,13 +50,16 @@ export function FeatureTerminal({ lines, className }: FeatureTerminalProps) {
     }
 
     lines.forEach((_, i) => {
-      const id = setTimeout(() => {
-        const el = lineRefs.current[i];
-        if (el) {
-          el.style.transition = "opacity 280ms ease";
-          el.style.opacity = "1";
-        }
-      }, 200 + i * LINE_DELAY_MS);
+      const id = setTimeout(
+        () => {
+          const el = lineRefs.current[i];
+          if (el) {
+            el.style.transition = "opacity 280ms ease";
+            el.style.opacity = "1";
+          }
+        },
+        200 + i * LINE_DELAY_MS
+      );
       timerIds.current.push(id);
     });
 
@@ -67,7 +72,9 @@ export function FeatureTerminal({ lines, className }: FeatureTerminalProps) {
 
   useEffect(() => {
     const el = containerRef.current;
-    if (!el) return;
+    if (!el) {
+      return;
+    }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -91,26 +98,29 @@ export function FeatureTerminal({ lines, className }: FeatureTerminalProps) {
 
   return (
     <div
-      ref={containerRef}
       className={cn(
         "overflow-hidden rounded-xl border border-slate-200 bg-slate-50 font-mono",
         className
       )}
+      ref={containerRef}
     >
-      <div className="flex items-center gap-1.5 border-b border-slate-200 bg-slate-100 px-3 py-2.5">
+      <div className="flex items-center gap-1.5 border-slate-200 border-b bg-slate-100 px-3 py-2.5">
         <span className="size-2 rounded-full bg-slate-300" />
         <span className="size-2 rounded-full bg-slate-300" />
         <span className="size-2 rounded-full bg-slate-300" />
       </div>
-      <div className="space-y-1 p-4" style={{ minHeight: `${bodyMinHeight}px` }}>
+      <div
+        className="space-y-1 p-4"
+        style={{ minHeight: `${bodyMinHeight}px` }}
+      >
         {lines.map((line, i) => (
           <div
+            className={cn("text-xs leading-relaxed", TYPE_CLASSES[line.type])}
             // biome-ignore lint/suspicious/noArrayIndexKey: order is static
             key={i}
             ref={(el) => {
               lineRefs.current[i] = el;
             }}
-            className={cn("text-xs leading-relaxed", TYPE_CLASSES[line.type])}
             style={{ opacity: 0 }}
           >
             {line.type === "blank" ? "\u00a0" : line.text}

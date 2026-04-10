@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Geist_Mono, Newsreader } from "next/font/google";
+import { Suspense } from "react";
 import { QueryProvider } from "@/components/query-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -98,11 +99,13 @@ export default function RootLayout({
       lang="en"
     >
       <body className="flex min-h-full flex-col bg-background font-sans text-foreground">
-        <QueryProvider>
-          <SiteHeader />
-          <div className="flex flex-1 flex-col">{children}</div>
-          <SiteFooter />
-        </QueryProvider>
+        <Suspense>
+          <QueryProvider>
+            <SiteHeader />
+            <div className="flex flex-1 flex-col">{children}</div>
+            <SiteFooter />
+          </QueryProvider>
+        </Suspense>
       </body>
     </html>
   );

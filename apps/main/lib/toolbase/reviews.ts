@@ -3,9 +3,9 @@ import { cacheLife, cacheTag, revalidateTag } from "next/cache";
 import { uuidv7 } from "uuidv7";
 import { db } from "@/lib/db";
 import { review as reviewTable } from "@/lib/db/schema";
+import { getProduct } from "./products";
 import type { Review, ReviewInput } from "./schema";
 import { reviewSchema } from "./schema";
-import { getProduct } from "./products";
 
 export async function submitReview(
   input: ReviewInput

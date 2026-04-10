@@ -1,9 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import {
-  findRelatedProducts,
-  productToHit,
-  queryProducts,
-} from "../match";
+import { findRelatedProducts, productToHit, queryProducts } from "../match";
 import type { Product } from "../schema";
 
 function makeProduct(overrides: Partial<Product> = {}): Product {
@@ -15,7 +11,10 @@ function makeProduct(overrides: Partial<Product> = {}): Product {
     capabilities: ["testing", "mocking"],
     tags: ["test", "dev"],
     pricing: { model: "free", starting_price: 0 },
-    api: { base_url: "https://api.test.com", docs_url: "https://docs.test.com" },
+    api: {
+      base_url: "https://api.test.com",
+      docs_url: "https://docs.test.com",
+    },
     mcp: { supported: false, endpoint: null },
     ...overrides,
   };
@@ -165,7 +164,7 @@ describe("findRelatedProducts", () => {
     const related = findRelatedProducts(target, others);
     const paddle = related.find((r) => r.id === "paddle");
     expect(paddle).toBeDefined();
-    expect(paddle!.relation).toBe("same_category");
+    expect(paddle?.relation).toBe("same_category");
   });
 
   it("excludes the target itself", () => {

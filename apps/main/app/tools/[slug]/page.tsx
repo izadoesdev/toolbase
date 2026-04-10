@@ -6,8 +6,8 @@ import {
   getBugReports,
   getProduct,
   getRelatedProducts,
-  getReviews,
   getReviewSummary,
+  getReviews,
 } from "@/lib/toolbase/registry";
 
 interface Props {
@@ -17,7 +17,9 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProduct(slug);
-  if (!product) return {};
+  if (!product) {
+    return {};
+  }
   return {
     title: product.name,
     description: product.tagline ?? product.description.slice(0, 160),
@@ -38,7 +40,7 @@ function Badge({
   };
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-medium ${styles[variant]}`}
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 font-medium text-[10px] ${styles[variant]}`}
     >
       {children}
     </span>
@@ -72,6 +74,16 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
+function severityClass(severity: string): string {
+  if (severity === "critical") {
+    return "bg-red-100 text-red-700";
+  }
+  if (severity === "high") {
+    return "bg-orange-100 text-orange-700";
+  }
+  return "bg-muted text-muted-foreground";
+}
+
 const PRICING_COLORS: Record<string, string> = {
   free: "text-emerald-600",
   freemium: "text-blue-600",
@@ -84,7 +96,9 @@ const PRICING_COLORS: Record<string, string> = {
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
   const product = await getProduct(slug);
-  if (!product) notFound();
+  if (!product) {
+    notFound();
+  }
 
   const [reviewSummary, reviews, bugs, related] = await Promise.all([
     getReviewSummary(slug),
@@ -110,7 +124,7 @@ export default async function ProductPage({ params }: Props) {
           {/* Header */}
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="font-display text-3xl font-normal text-foreground tracking-tight">
+              <h1 className="font-display font-normal text-3xl text-foreground tracking-tight">
                 {product.name}
               </h1>
               {product.mcp.supported && <Badge variant="mcp">MCP</Badge>}
@@ -120,7 +134,7 @@ export default async function ProductPage({ params }: Props) {
               )}
             </div>
             {product.tagline && (
-              <p className="text-muted-foreground text-lg">{product.tagline}</p>
+              <p className="text-lg text-muted-foreground">{product.tagline}</p>
             )}
             <p className="text-muted-foreground text-sm leading-relaxed">
               {product.description}
@@ -137,7 +151,7 @@ export default async function ProductPage({ params }: Props) {
                 <Stars rating={reviewSummary.avg_rating} />
                 <p className="text-muted-foreground text-xs">
                   {reviewSummary.count} review
-                  {reviewSummary.count !== 1 ? "s" : ""}
+                  {reviewSummary.count === 1 ? "" : "s"}
                 </p>
               </div>
             )}
@@ -146,7 +160,7 @@ export default async function ProductPage({ params }: Props) {
                 Pricing
               </p>
               <p
-                className={`text-sm font-medium ${PRICING_COLORS[product.pricing.model] ?? "text-foreground"}`}
+                className={`font-medium text-sm ${PRICING_COLORS[product.pricing.model] ?? "text-foreground"}`}
               >
                 {product.pricing.model}
                 {product.pricing.starting_price > 0 &&
@@ -163,7 +177,7 @@ export default async function ProductPage({ params }: Props) {
                 <p className="font-mono text-[10px] text-muted-foreground uppercase">
                   Difficulty
                 </p>
-                <p className="text-sm font-medium text-foreground">
+                <p className="font-medium text-foreground text-sm">
                   {product.integration.difficulty}
                 </p>
                 {product.integration.typical_setup_minutes && (
@@ -177,7 +191,7 @@ export default async function ProductPage({ params }: Props) {
               <p className="font-mono text-[10px] text-muted-foreground uppercase">
                 Completeness
               </p>
-              <p className="text-sm font-medium text-foreground">
+              <p className="font-medium text-foreground text-sm">
                 {completeness}%
               </p>
             </div>
@@ -259,9 +273,7 @@ export default async function ProductPage({ params }: Props) {
                       </div>
                     )}
                     <div className="mt-3 flex flex-wrap gap-3 text-muted-foreground text-xs">
-                      {r.docs_quality && (
-                        <span>docs: {r.docs_quality}/5</span>
-                      )}
+                      {r.docs_quality && <span>docs: {r.docs_quality}/5</span>}
                       {r.sdk_quality && <span>sdk: {r.sdk_quality}/5</span>}
                       {r.would_use_again !== undefined && (
                         <span>
@@ -286,13 +298,7 @@ export default async function ProductPage({ params }: Props) {
                   >
                     <div className="flex items-center gap-2">
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                          b.severity === "critical"
-                            ? "bg-red-100 text-red-700"
-                            : b.severity === "high"
-                              ? "bg-orange-100 text-orange-700"
-                              : "bg-muted text-muted-foreground"
-                        }`}
+                        className={`rounded-full px-2 py-0.5 font-medium text-[10px] ${severityClass(b.severity)}`}
                       >
                         {b.severity}
                       </span>
@@ -343,7 +349,7 @@ export default async function ProductPage({ params }: Props) {
               {product.auth?.key_env_var && (
                 <div>
                   <dt className="text-muted-foreground text-xs">Key env var</dt>
-                  <dd className="font-mono text-xs text-foreground">
+                  <dd className="font-mono text-foreground text-xs">
                     {product.auth.key_env_var}
                   </dd>
                 </div>

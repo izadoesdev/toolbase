@@ -1,30 +1,29 @@
-// Barrel re-export — all consumers can keep importing from "@/lib/toolbase/registry"
+// biome-ignore lint/performance/noBarrelFile: intentional barrel for backward-compatible imports
 export {
-  submitBugReport,
   getBugReports,
+  submitBugReport,
 } from "./bugs";
-
+export type { PendingProduct, ToolbaseMeta } from "./products";
 export {
-  getProduct,
-  computeCompleteness,
   addProductToDb,
-  proposeProductUpdate,
   approveProduct,
-  rejectProduct,
-  listPendingProducts,
+  computeCompleteness,
   getPendingProduct,
+  getProduct,
+  listPendingProducts,
+  proposeProductUpdate,
+  rejectProduct,
 } from "./products";
-export type { ToolbaseMeta, PendingProduct } from "./products";
 
 export {
-  submitReview,
-  getReviews,
-  getReviewSummary,
   getReviewCount,
+  getReviewSummary,
+  getReviews,
+  submitReview,
 } from "./reviews";
 
 export {
+  getRelatedProducts,
   listProducts,
   searchProducts,
-  getRelatedProducts,
 } from "./search";

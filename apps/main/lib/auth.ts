@@ -4,7 +4,6 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { admin, bearer } from "better-auth/plugins";
 import { db } from "./db";
-/** biome-ignore lint/performance/noNamespaceImport: Drizzle adapter requires namespace import  DO NOT REMOVE THIS*/
 import * as schema from "./db/schema";
 import { env } from "./env";
 

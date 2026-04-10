@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { listProducts, getReviewSummary } from "@/lib/toolbase/registry";
-import { computeCompleteness } from "@/lib/toolbase/registry";
-import { cn } from "@/lib/utils";
+import { getReviewSummary, listProducts } from "@/lib/toolbase/registry";
 import { CatalogClient } from "./catalog-client";
 
 export const metadata: Metadata = {
@@ -60,7 +57,7 @@ export default async function ToolsPage() {
         <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
           catalog
         </p>
-        <h1 className="mt-2 font-display text-3xl font-normal text-foreground tracking-tight sm:text-4xl">
+        <h1 className="mt-2 font-display font-normal text-3xl text-foreground tracking-tight sm:text-4xl">
           Browse all tools
         </h1>
         <p className="mt-3 max-w-lg text-muted-foreground text-sm leading-relaxed">

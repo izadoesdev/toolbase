@@ -2,7 +2,6 @@ import { sql } from "drizzle-orm";
 import { connection } from "next/server";
 import { db } from "@/lib/db";
 
-// biome-ignore lint/suspicious/useAwait: Next.js route handlers must be async
 export async function GET() {
   await connection();
   try {
