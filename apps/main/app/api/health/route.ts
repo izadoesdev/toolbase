@@ -1,10 +1,10 @@
 import { sql } from "drizzle-orm";
+import { connection } from "next/server";
 import { db } from "@/lib/db";
-
-export const dynamic = "force-dynamic";
 
 // biome-ignore lint/suspicious/useAwait: Next.js route handlers must be async
 export async function GET() {
+  await connection();
   try {
     await db.execute(sql`SELECT 1`);
     return Response.json({ status: "ok", timestamp: new Date().toISOString() });

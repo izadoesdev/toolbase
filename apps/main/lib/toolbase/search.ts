@@ -127,6 +127,9 @@ export async function getRelatedProducts(
   id: string,
   limit = 8
 ): Promise<RelatedHit[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("products", `product:${id}`);
   if (process.env.VOYAGE_API_KEY) {
     try {
       const embResult = await db.execute<{ embedding: string | null }>(
