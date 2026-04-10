@@ -71,6 +71,8 @@ function ToolTag({ name }: { name: string }) {
 }
 
 export default async function Home() {
+  "use cache";
+
   const [allProducts, reviewCount] = await Promise.all([
     listProducts(),
     getReviewCount(),

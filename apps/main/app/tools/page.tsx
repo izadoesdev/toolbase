@@ -29,6 +29,8 @@ export interface CatalogProduct {
 }
 
 export default async function ToolsPage() {
+  "use cache";
+
   const products = await listProducts();
 
   const catalogProducts: CatalogProduct[] = await Promise.all(

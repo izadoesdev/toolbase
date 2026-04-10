@@ -1,4 +1,5 @@
-import { and, eq, inArray, like, sql } from "drizzle-orm";
+import { and, eq, inArray, like } from "drizzle-orm";
+import { cacheLife } from "next/cache";
 import { uuidv7 } from "uuidv7";
 import { db } from "@/lib/db";
 import { catalogProduct } from "@/lib/db/schema";
@@ -44,6 +45,8 @@ export interface PendingProduct {
 }
 
 export async function getProduct(id: string): Promise<Product | undefined> {
+  "use cache";
+  cacheLife("minutes");
   const [row] = await db
     .select()
     .from(catalogProduct)

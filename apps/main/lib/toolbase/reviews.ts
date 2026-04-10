@@ -1,4 +1,5 @@
 import { eq, sql } from "drizzle-orm";
+import { cacheLife } from "next/cache";
 import { uuidv7 } from "uuidv7";
 import { db } from "@/lib/db";
 import { review as reviewTable } from "@/lib/db/schema";
@@ -50,6 +51,8 @@ export async function getReviews(
 export async function getReviewSummary(
   productId: string
 ): Promise<{ avg_rating: number | null; count: number }> {
+  "use cache";
+  cacheLife("minutes");
   const reviews = await getReviews(productId, 100);
   if (reviews.length === 0) {
     return { avg_rating: null, count: 0 };
@@ -59,6 +62,8 @@ export async function getReviewSummary(
 }
 
 export async function getReviewCount(): Promise<number> {
+  "use cache";
+  cacheLife("minutes");
   const result = await db.execute<{ count: string }>(
     sql`SELECT COUNT(*) AS count FROM review`
   );

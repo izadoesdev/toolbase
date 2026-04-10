@@ -1,5 +1,6 @@
 import type { SQL } from "drizzle-orm";
 import { eq, sql } from "drizzle-orm";
+import { cacheLife } from "next/cache";
 import { db } from "@/lib/db";
 import { catalogProduct } from "@/lib/db/schema";
 import { buildEmbeddingDoc, embedDocument, embedQuery } from "./embed";
@@ -11,6 +12,8 @@ import { productSchema } from "./schema";
 export async function listProducts(
   opts?: { limit?: number; offset?: number }
 ): Promise<Product[]> {
+  "use cache";
+  cacheLife("minutes");
   const rows = await db
     .select()
     .from(catalogProduct)
