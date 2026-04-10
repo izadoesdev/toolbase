@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { BRAND_NAME, BrandLogo } from "@/components/brand-logo";
+import Link from "next/link";
 
 interface FooterLink {
   external?: boolean;
@@ -8,11 +8,13 @@ interface FooterLink {
 }
 
 const FOOTER_LINKS: Record<string, FooterLink[]> = {
-  Product: [
-    { href: "/tools", label: "Browse catalog" },
-  ],
+  Product: [{ href: "/tools", label: "Browse catalog" }],
   Developers: [
-    { href: "https://github.com/izadoesdev/toolbase", label: "GitHub", external: true },
+    {
+      href: "https://github.com/izadoesdev/toolbase",
+      label: "GitHub",
+      external: true,
+    },
   ],
   Company: [
     { href: "https://github.com/izadoesdev", label: "GitHub", external: true },
@@ -78,7 +80,7 @@ export function SiteFooter() {
 
         <div className="mt-12 flex flex-col gap-2 border-border border-t pt-8 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-muted-foreground text-xs">
-            © 2025 {BRAND_NAME}. Built for agents, by agents.
+            © 2026 {BRAND_NAME}. Built for agents, by agents.
           </p>
           <p className="font-mono text-muted-foreground text-xs">
             v0.5.0 · MCP Streamable HTTP
