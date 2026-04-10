@@ -1,6 +1,6 @@
 import type { SQL } from "drizzle-orm";
 import { eq, sql } from "drizzle-orm";
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { db } from "@/lib/db";
 import { catalogProduct } from "@/lib/db/schema";
 import { buildEmbeddingDoc, embedDocument, embedQuery } from "./embed";
@@ -14,6 +14,7 @@ export async function listProducts(
 ): Promise<Product[]> {
   "use cache";
   cacheLife("minutes");
+  cacheTag("products");
   const rows = await db
     .select()
     .from(catalogProduct)

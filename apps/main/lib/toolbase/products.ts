@@ -1,5 +1,5 @@
 import { and, eq, inArray, like } from "drizzle-orm";
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag, revalidateTag } from "next/cache";
 import { uuidv7 } from "uuidv7";
 import { db } from "@/lib/db";
 import { catalogProduct } from "@/lib/db/schema";
@@ -47,6 +47,7 @@ export interface PendingProduct {
 export async function getProduct(id: string): Promise<Product | undefined> {
   "use cache";
   cacheLife("minutes");
+  cacheTag("products", `product:${id}`);
   const [row] = await db
     .select()
     .from(catalogProduct)
@@ -317,6 +318,8 @@ async function collapseIntoExistingUpdate(
   ) {
     await applyUpdateToOriginal(updateRow.id, parsed.data, id);
     await triggerEmbedding(id);
+    revalidateTag("products", "max");
+    revalidateTag(`product:${id}`, "max");
     return { auto_approved: true, ok: true, update_id: updateRow.id };
   }
 
@@ -475,6 +478,8 @@ export async function approveProduct(
           : parsed.data;
       await applyUpdateToOriginal(id, resolvedData, originalId);
       await triggerEmbedding(originalId);
+      revalidateTag("products", "max");
+      revalidateTag(`product:${originalId}`, "max");
       return { ok: true };
     }
   }
@@ -484,6 +489,8 @@ export async function approveProduct(
     .set({ status: "approved" })
     .where(eq(catalogProduct.id, id));
   await triggerEmbedding(id);
+  revalidateTag("products", "max");
+  revalidateTag(`product:${id}`, "max");
   return { ok: true };
 }
 
@@ -503,6 +510,8 @@ export async function rejectProduct(
     .update(catalogProduct)
     .set({ status: "rejected" })
     .where(eq(catalogProduct.id, id));
+  revalidateTag("products", "max");
+  revalidateTag(`product:${id}`, "max");
   return { ok: true };
 }
 
