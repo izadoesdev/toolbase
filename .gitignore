@@ -39,3 +39,4 @@ yarn-error.log*
 
 # IDE (local MCP URLs, etc.)
 .cursor/
+.claude/
