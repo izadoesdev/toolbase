@@ -245,14 +245,50 @@ function applyFilters(
   return result;
 }
 
+export interface QueryPage {
+  hits: QueryHit[];
+  total: number;
+}
+
+function hasAnyFilter(filters?: QueryFilters): boolean {
+  if (!filters) {
+    return false;
+  }
+  return (
+    filters.category !== undefined ||
+    filters.mcp_only !== undefined ||
+    filters.has_free_tier !== undefined ||
+    filters.self_hostable !== undefined ||
+    filters.open_source !== undefined ||
+    filters.difficulty !== undefined ||
+    filters.sdk_language !== undefined ||
+    filters.compliance !== undefined ||
+    filters.maturity !== undefined
+  );
+}
+
 export function queryProducts(
   query: string,
   products: readonly Product[],
   filters?: QueryFilters
-): QueryHit[] {
+): QueryPage {
   const terms = query.toLowerCase().trim().split(WORD_SPLIT).filter(Boolean);
+  const offset = filters?.offset ?? 0;
+  const limit = filters?.limit ?? 10;
+
   if (terms.length === 0) {
-    return [];
+    // Filter-only discovery: require at least one filter, otherwise refuse to
+    // dump the whole catalog. Keyword-less queries with no filters return
+    // nothing so agents are nudged toward either a query or an explicit filter.
+    if (!hasAnyFilter(filters)) {
+      return { hits: [], total: 0 };
+    }
+    const filtered = applyFilters(products, filters);
+    const hits = filtered.map((p) => productToHit(p, 0, ["matches filters"]));
+    return {
+      hits: hits.slice(offset, offset + limit),
+      total: hits.length,
+    };
   }
 
   const filtered = applyFilters(products, filters);
@@ -272,7 +308,7 @@ export function queryProducts(
         break;
       }
       totalScore += weight;
-      reasons.push(`${label} matches '${term}'`);
+      reasons.push(`keyword '${term}' matched ${label}`);
       if (weight >= STRONG_MATCH_THRESHOLD) {
         anyStrongMatch = true;
       }
@@ -286,8 +322,10 @@ export function queryProducts(
   }
 
   scored.sort((a, b) => b.score - a.score);
-  const offset = filters?.offset ?? 0;
-  return scored.slice(offset, offset + (filters?.limit ?? 10));
+  return {
+    hits: scored.slice(offset, offset + limit),
+    total: scored.length,
+  };
 }
 
 export interface RelatedHit {

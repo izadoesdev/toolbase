@@ -14,10 +14,10 @@ const LINE_DELAY_MS = 200;
 const PAUSE_AFTER_MS = 5000;
 
 const TYPE_CLASSES: Record<LineType, string> = {
-  cmd: "text-violet-600",
-  result: "text-slate-500",
-  dim: "text-slate-400",
-  ok: "text-emerald-600",
+  cmd: "text-[#7aa2f7]",
+  result: "text-[#a9b1d6]",
+  dim: "text-[#595959]",
+  ok: "text-[#9ece6a]",
   blank: "",
 };
 
@@ -99,15 +99,16 @@ export function FeatureTerminal({ lines, className }: FeatureTerminalProps) {
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-xl border border-slate-200 bg-slate-50 font-mono",
+        "relative overflow-hidden border border-[#262626] bg-[#0a0a0a] font-mono shadow-[0_25px_50px_-12px_rgba(0,0,0,0.6)]",
         className
       )}
       ref={containerRef}
     >
-      <div className="flex items-center gap-1.5 border-slate-200 border-b bg-slate-100 px-3 py-2.5">
-        <span className="size-2 rounded-full bg-slate-300" />
-        <span className="size-2 rounded-full bg-slate-300" />
-        <span className="size-2 rounded-full bg-slate-300" />
+      <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(to_right,transparent_0%,#595959_50%,transparent_100%)]" />
+      <div className="flex items-center gap-1.5 border-[#262626] border-b bg-[#0d0d0d] px-4 py-2.5">
+        <span className="size-2 rounded-full bg-[#262626]" />
+        <span className="size-2 rounded-full bg-[#262626]" />
+        <span className="size-2 rounded-full bg-[#262626]" />
       </div>
       <div
         className="space-y-1 p-4"

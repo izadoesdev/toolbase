@@ -25,9 +25,10 @@ export function registerSearchTools(server: McpServer): void {
         query: s(
           z
             .string()
-            .min(1)
+            .max(512)
+            .optional()
             .describe(
-              "Search terms — describe the problem or capability (e.g. 'serverless postgres', 'auth with SSO', 'transactional email')"
+              "Search terms — describe the problem or capability (e.g. 'serverless postgres', 'auth with SSO', 'transactional email'). Optional when at least one filter is set; omit to list filter-matched products."
             )
         ),
         category: s(
@@ -108,7 +109,7 @@ export function registerSearchTools(server: McpServer): void {
       },
     },
     async (input: {
-      query: string;
+      query?: string;
       category?: string;
       mcp_only?: boolean;
       has_free_tier?: boolean;
@@ -121,7 +122,49 @@ export function registerSearchTools(server: McpServer): void {
       limit?: number;
       offset?: number;
     }) => {
-      const results = await searchProducts(input.query, {
+      const trimmedQuery = (input.query ?? "").trim();
+      const hasFilter =
+        input.category !== undefined ||
+        input.mcp_only !== undefined ||
+        input.has_free_tier !== undefined ||
+        input.self_hostable !== undefined ||
+        input.open_source !== undefined ||
+        input.difficulty !== undefined ||
+        input.sdk_language !== undefined ||
+        input.compliance !== undefined ||
+        input.maturity !== undefined;
+
+      if (trimmedQuery.length === 0 && !hasFilter) {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: "Provide a query or at least one filter (e.g. category, mcp_only, has_free_tier). Use toolbase_categories to list available categories.",
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      if (input.category !== undefined) {
+        const categories = await listCategories();
+        const known = categories.map((c) => c.category);
+        if (!known.includes(input.category)) {
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: `Unknown category "${input.category}". Valid categories: ${known.join(", ") || "(none — catalog is empty)"}.`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+
+      const limit = input.limit ?? 10;
+      const offset = input.offset ?? 0;
+      const page = await searchProducts(trimmedQuery, {
         category: input.category,
         mcp_only: input.mcp_only,
         has_free_tier: input.has_free_tier,
@@ -131,14 +174,25 @@ export function registerSearchTools(server: McpServer): void {
         sdk_language: input.sdk_language,
         compliance: input.compliance,
         maturity: input.maturity,
-        limit: input.limit,
-        offset: input.offset,
+        limit,
+        offset,
       });
       return {
         content: [
           {
             type: "text" as const,
-            text: JSON.stringify({ count: results.length, results }, null, 2),
+            text: JSON.stringify(
+              {
+                count: page.hits.length,
+                total: page.total,
+                offset,
+                limit,
+                has_more: offset + page.hits.length < page.total,
+                results: page.hits,
+              },
+              null,
+              2
+            ),
           },
         ],
       };

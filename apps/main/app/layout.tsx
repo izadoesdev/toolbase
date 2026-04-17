@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Geist_Mono, Newsreader } from "next/font/google";
+import Script from "next/script";
 import { Suspense } from "react";
 import { QueryProvider } from "@/components/query-provider";
 import { SiteFooter } from "@/components/site-footer";
@@ -91,13 +92,20 @@ export default function RootLayout({
   return (
     <html
       className={cn(
-        "h-full scroll-smooth antialiased",
+        "dark h-full scroll-smooth antialiased",
         dmSans.variable,
         newsreader.variable,
         geistMono.variable
       )}
       lang="en"
     >
+      <head>
+        <Script
+          crossOrigin="anonymous"
+          src="//unpkg.com/react-scan/dist/auto.global.js"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body className="flex min-h-full flex-col bg-background font-sans text-foreground">
         <Suspense>
           <QueryProvider>

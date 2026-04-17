@@ -8,7 +8,7 @@ config({ path: resolve(__dirname, "../../.env") });
 config({ path: resolve(__dirname, ".env") });
 
 export default defineConfig({
-  schema: "./lib/db/schema.ts",
+  schema: ["./lib/db/schema.ts", "./lib/db/auth-schema.ts"],
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {

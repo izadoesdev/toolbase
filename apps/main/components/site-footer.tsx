@@ -1,5 +1,185 @@
 import Link from "next/link";
-import { BRAND_NAME, BrandLogo } from "@/components/brand-logo";
+import { BRAND_NAME } from "@/components/brand-logo";
+
+const MCP_ENDPOINT = "https://toolbase.sh/api/mcp";
+
+const COLUMNS: {
+  label: string;
+  links: { href: string; label: string; external?: boolean }[];
+}[] = [
+  {
+    label: "Directory",
+    links: [
+      { href: "/tools", label: "Catalog" },
+      { href: "/leaderboard", label: "Leaderboard" },
+      { href: "/tools?agent=true", label: "Agent-runnable" },
+      { href: "/tools?mcp=true", label: "MCP-native" },
+    ],
+  },
+  {
+    label: "For agents",
+    links: [
+      { href: MCP_ENDPOINT, label: "MCP endpoint", external: true },
+      { href: "/api/schema", label: "Schema" },
+      { href: "/#install", label: "Install" },
+    ],
+  },
+  {
+    label: "For humans",
+    links: [
+      { href: "/#install", label: "Get started" },
+      {
+        href: "https://github.com/izadoesdev/toolbase",
+        label: "GitHub",
+        external: true,
+      },
+      { href: "/api/health", label: "Status" },
+    ],
+  },
+];
+
+export function SiteFooter() {
+  return (
+    <footer className="mt-auto border-[#262626] border-t bg-[#0a0a0a]">
+      {/* ── Big endpoint block ── */}
+      <div className="relative border-[#262626] border-b">
+        <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(to_right,transparent_0%,#595959_50%,transparent_100%)]" />
+        <div className="mx-auto flex w-full max-w-[1232px] flex-col gap-6 px-6 py-14 md:flex-row md:items-end md:justify-between">
+          <div className="flex flex-col gap-3">
+            <span className="font-mono text-[#9c9ca6] text-[11px] uppercase tracking-[0.25em]">
+              MCP endpoint
+            </span>
+            <a
+              className="flex items-center gap-3 font-mono text-[20px] text-white transition-colors hover:text-[#9ece6a] sm:text-[24px]"
+              href={MCP_ENDPOINT}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <span
+                aria-hidden
+                className="inline-block size-2 animate-pulse rounded-full bg-[#9ece6a]"
+              />
+              <span>{MCP_ENDPOINT}</span>
+            </a>
+          </div>
+          <p className="max-w-sm text-[#9c9ca6] text-[14px] leading-[22px]">
+            Tools agents run. No human required. Point your MCP client here and
+            your agent can search, read, and review the directory on the first
+            call.
+          </p>
+        </div>
+      </div>
+
+      {/* ── Columns ── */}
+      <div className="mx-auto grid w-full max-w-[1232px] gap-12 px-6 py-14 sm:grid-cols-[1fr_2fr] md:grid-cols-[1fr_3fr]">
+        <Brand />
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-3">
+          {COLUMNS.map((col) => (
+            <Column col={col} key={col.label} />
+          ))}
+        </div>
+      </div>
+
+      {/* ── Bottom bar ── */}
+      <div className="border-[#262626] border-t">
+        <div className="mx-auto flex w-full max-w-[1232px] flex-col-reverse items-start justify-between gap-4 px-6 py-6 sm:flex-row sm:items-center">
+          <p className="font-mono text-[#595959] text-[11px] uppercase tracking-[0.25em]">
+            © 2026 {BRAND_NAME} · agent-runnable
+          </p>
+          <div className="flex items-center gap-1">
+            <Social
+              href="https://github.com/izadoesdev/toolbase"
+              label="GitHub"
+            >
+              <GitHubIcon />
+            </Social>
+            <Social href="https://x.com/izadoesdev" label="X">
+              <XIcon />
+            </Social>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function Brand() {
+  return (
+    <div className="flex flex-col gap-3">
+      <span className="font-semibold text-[18px] text-white tracking-tight">
+        {BRAND_NAME}
+      </span>
+      <p className="max-w-[240px] text-[#9c9ca6] text-[13px] leading-[20px]">
+        A directory of developer APIs your agent can ship — end-to-end, no OAuth
+        detours.
+      </p>
+    </div>
+  );
+}
+
+function Column({
+  col,
+}: {
+  col: {
+    label: string;
+    links: { href: string; label: string; external?: boolean }[];
+  };
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      <span className="font-mono text-[#9c9ca6] text-[11px] uppercase tracking-[0.25em]">
+        {col.label}
+      </span>
+      <ul className="flex flex-col gap-3">
+        {col.links.map((l) =>
+          l.external ? (
+            <li key={l.label}>
+              <a
+                className="text-[13px] text-white transition-colors hover:text-[#9ece6a]"
+                href={l.href}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {l.label}
+              </a>
+            </li>
+          ) : (
+            <li key={l.label}>
+              <Link
+                className="text-[13px] text-white transition-colors hover:text-[#9ece6a]"
+                href={l.href}
+              >
+                {l.label}
+              </Link>
+            </li>
+          )
+        )}
+      </ul>
+    </div>
+  );
+}
+
+function Social({
+  href,
+  label,
+  children,
+}: {
+  href: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      aria-label={label}
+      className="inline-flex size-9 items-center justify-center border border-transparent text-[#9c9ca6] transition-colors hover:border-[#262626] hover:text-white"
+      href={href}
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      {children}
+    </a>
+  );
+}
 
 function GitHubIcon() {
   return (
@@ -20,100 +200,5 @@ function XIcon() {
       <title>X</title>
       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     </svg>
-  );
-}
-
-const FOOTER_LINKS = {
-  Product: [
-    { href: "/tools", label: "Catalog" },
-    { href: "/#get-started", label: "Get started" },
-  ],
-  Resources: [
-    {
-      href: "https://github.com/izadoesdev/toolbase",
-      label: "GitHub",
-      external: true,
-    },
-    { href: "/api/health", label: "Status" },
-  ],
-} as const;
-
-export function SiteFooter() {
-  return (
-    <footer className="mt-auto border-border/50 border-t">
-      <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-        <div className="flex flex-col gap-10 sm:flex-row sm:justify-between">
-          {/* Brand */}
-          <div className="max-w-xs">
-            <div className="flex items-center gap-2">
-              <BrandLogo size="sm" />
-              <span className="font-semibold text-foreground text-sm tracking-tight">
-                {BRAND_NAME}
-              </span>
-            </div>
-            <p className="mt-3 text-[13px] text-muted-foreground leading-relaxed">
-              The MCP catalog built by agents, for agents.
-            </p>
-          </div>
-
-          {/* Links */}
-          <div className="flex gap-16">
-            {Object.entries(FOOTER_LINKS).map(([section, links]) => (
-              <div key={section}>
-                <p className="font-medium text-[13px] text-foreground">
-                  {section}
-                </p>
-                <ul className="mt-3 space-y-2">
-                  {links.map((link) => (
-                    <li key={link.href}>
-                      {"external" in link && link.external ? (
-                        <a
-                          className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-                          href={link.href}
-                          rel="noopener noreferrer"
-                          target="_blank"
-                        >
-                          {link.label}
-                        </a>
-                      ) : (
-                        <Link
-                          className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-                          href={link.href}
-                        >
-                          {link.label}
-                        </Link>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom bar */}
-        <div className="mt-10 flex items-center justify-between border-border/50 border-t pt-6">
-          <p className="text-muted-foreground/60 text-xs">{BRAND_NAME}</p>
-          <div className="flex items-center gap-3">
-            <a
-              className="text-muted-foreground/60 transition-colors hover:text-foreground"
-              href="https://github.com/izadoesdev/toolbase"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <GitHubIcon />
-            </a>
-            <a
-              className="text-muted-foreground/60 transition-colors hover:text-foreground"
-              href="https://x.com/izadoesdev"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <XIcon />
-            </a>
-          </div>
-        </div>
-      </div>
-    </footer>
   );
 }

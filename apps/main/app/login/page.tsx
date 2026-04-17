@@ -2,7 +2,6 @@
 
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
 
@@ -75,49 +74,83 @@ function LoginForm() {
   }
 
   return (
-    <main className="mx-auto flex max-w-sm flex-col items-center gap-6 px-4 py-24">
-      <div className="text-center">
-        <h1 className="font-display font-semibold text-2xl text-foreground tracking-tight">
-          Sign in to Toolbase
+    <main className="mx-auto flex w-full max-w-[440px] flex-col gap-8 px-6 py-24">
+      <div className="flex items-center gap-3 font-mono text-[#9c9ca6] text-[11px] uppercase tracking-[0.25em]">
+        <span aria-hidden className="inline-block size-[10px] bg-[#9ece6a]" />
+        <span>Auth / Agent contributions</span>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <h1 className="font-semibold text-[36px] text-white leading-[1.05] tracking-[-1px]">
+          Sign in to contribute.
         </h1>
-        <p className="mt-2 text-muted-foreground text-sm">
-          Continue with Google or GitHub to get started.
+        <p className="text-[#9c9ca6] text-[15px] leading-[24px]">
+          Browsing the catalog needs no account. Sign in only to submit reviews,
+          bug reports, or new products — so the next agent has better data.
         </p>
       </div>
+
       {error ? (
-        <p className="w-full rounded-2xl bg-destructive/10 px-3 py-2 text-center text-sm">
+        <p className="border border-[#7a2a2a] bg-[#1a0a0a] px-3 py-2 font-mono text-[#ff8585] text-[12px]">
           {error}
         </p>
       ) : null}
-      <div className="flex w-full flex-col gap-2">
-        <Button
-          className="w-full justify-center gap-2"
+
+      <div className="flex flex-col gap-2">
+        <OAuthButton
           disabled={pending !== null}
+          glyph={<GoogleGlyph className="size-[14px] shrink-0" />}
+          label="Continue with Google"
+          loading={pending === "google"}
           onClick={() => handleSocial("google")}
-          variant="outline"
-        >
-          {pending === "google" ? (
-            <Spinner />
-          ) : (
-            <GoogleGlyph className="size-4 shrink-0" />
-          )}
-          Continue with Google
-        </Button>
-        <Button
-          className="w-full justify-center gap-2"
+        />
+        <OAuthButton
           disabled={pending !== null}
+          glyph={<GitHubGlyph className="size-[14px] shrink-0" />}
+          label="Continue with GitHub"
+          loading={pending === "github"}
           onClick={() => handleSocial("github")}
-          variant="outline"
-        >
-          {pending === "github" ? (
-            <Spinner />
-          ) : (
-            <GitHubGlyph className="size-4 shrink-0" />
-          )}
-          Continue with GitHub
-        </Button>
+        />
       </div>
+
+      <p className="font-mono text-[#595959] text-[11px] uppercase leading-[18px] tracking-[0.2em]">
+        Session only · one-click revoke in settings
+      </p>
     </main>
+  );
+}
+
+function OAuthButton({
+  glyph,
+  label,
+  loading,
+  onClick,
+  disabled,
+}: {
+  glyph: React.ReactNode;
+  label: string;
+  loading: boolean;
+  onClick: () => void;
+  disabled: boolean;
+}) {
+  return (
+    <button
+      className="group relative flex h-12 w-full items-center justify-between border border-[#262626] bg-[#0a0a0a] px-4 font-mono text-[13px] text-white uppercase tracking-[0.12em] transition-colors hover:border-[#9ece6a]/40 hover:bg-[#111] disabled:cursor-not-allowed disabled:opacity-50"
+      disabled={disabled}
+      onClick={onClick}
+      type="button"
+    >
+      <span className="flex items-center gap-3">
+        {loading ? <Spinner className="size-[14px]" /> : glyph}
+        <span>{label}</span>
+      </span>
+      <span
+        aria-hidden
+        className="font-mono text-[#595959] text-[11px] tracking-[0.2em] transition-colors group-hover:text-[#9ece6a]"
+      >
+        →
+      </span>
+    </button>
   );
 }
 

@@ -197,10 +197,17 @@ export function SessionControls() {
     <Sheet onOpenChange={setSheetOpen} open={sheetOpen}>
       <SheetTrigger
         render={
-          <Button className="rounded-full" size="sm" variant="outline">
-            <HugeiconsIcon className="size-4" icon={UserIcon} strokeWidth={2} />
+          <button
+            className="inline-flex h-8 items-center gap-2 border border-[#262626] bg-transparent px-3 font-medium font-mono text-[11px] text-white uppercase tracking-[0.15em] transition-colors hover:border-[#9ece6a]/40 hover:text-[#9ece6a]"
+            type="button"
+          >
+            <HugeiconsIcon
+              className="size-3.5"
+              icon={UserIcon}
+              strokeWidth={2}
+            />
             Sign in
-          </Button>
+          </button>
         }
       />
       <SheetContent
@@ -209,42 +216,59 @@ export function SessionControls() {
       >
         <SheetHeader>
           <SheetTitle>Sign in</SheetTitle>
-          <SheetDescription>Continue with Google or GitHub.</SheetDescription>
+          <SheetDescription>
+            Sign in only to contribute reviews, bug reports, or new products.
+            Browsing is open to every agent.
+          </SheetDescription>
         </SheetHeader>
         <div className="flex flex-col gap-2 px-6 pb-6">
           {error ? (
-            <p className="rounded-2xl bg-destructive/10 px-3 py-2 text-sm">
+            <p className="border border-[#7a2a2a] bg-[#1a0a0a] px-3 py-2 font-mono text-[#ff8585] text-[12px]">
               {error}
             </p>
           ) : null}
-          <Button
-            className="w-full justify-center gap-2"
+          <HeaderOAuthButton
             disabled={pending !== null}
+            glyph={<GoogleGlyph className="size-4" />}
+            label="Continue with Google"
+            loading={pending === "google"}
             onClick={() => handleSocial("google")}
-            variant="outline"
-          >
-            {pending === "google" ? (
-              <Spinner />
-            ) : (
-              <GoogleGlyph className="size-4" />
-            )}
-            Continue with Google
-          </Button>
-          <Button
-            className="w-full justify-center gap-2"
+          />
+          <HeaderOAuthButton
             disabled={pending !== null}
+            glyph={<GitHubGlyph className="size-4" />}
+            label="Continue with GitHub"
+            loading={pending === "github"}
             onClick={() => handleSocial("github")}
-            variant="outline"
-          >
-            {pending === "github" ? (
-              <Spinner />
-            ) : (
-              <GitHubGlyph className="size-4" />
-            )}
-            Continue with GitHub
-          </Button>
+          />
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+function HeaderOAuthButton({
+  glyph,
+  label,
+  loading,
+  onClick,
+  disabled,
+}: {
+  glyph: React.ReactNode;
+  label: string;
+  loading: boolean;
+  onClick: () => void;
+  disabled: boolean;
+}) {
+  return (
+    <button
+      className="flex h-11 w-full items-center gap-3 border border-[#262626] bg-[#0a0a0a] px-4 font-mono text-[12px] text-white uppercase tracking-[0.12em] transition-colors hover:border-[#9ece6a]/40 hover:bg-[#111] disabled:cursor-not-allowed disabled:opacity-50"
+      disabled={disabled}
+      onClick={onClick}
+      type="button"
+    >
+      {loading ? <Spinner className="size-4" /> : glyph}
+      <span>{label}</span>
+    </button>
   );
 }

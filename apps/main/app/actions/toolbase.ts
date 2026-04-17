@@ -9,7 +9,9 @@ export async function searchToolbase(
 ) {
   const q = query.trim();
   if (!q) {
-    return { results: [] as Awaited<ReturnType<typeof searchProducts>> };
+    return {
+      results: [] as Awaited<ReturnType<typeof searchProducts>>["hits"],
+    };
   }
   const filters: Parameters<typeof searchProducts>[1] = {};
   if (category && category !== "all") {
@@ -18,10 +20,9 @@ export async function searchToolbase(
   if (offset !== undefined && offset > 0) {
     filters.offset = offset;
   }
-  return {
-    results: await searchProducts(
-      q,
-      Object.keys(filters).length > 0 ? filters : undefined
-    ),
-  };
+  const page = await searchProducts(
+    q,
+    Object.keys(filters).length > 0 ? filters : undefined
+  );
+  return { results: page.hits };
 }

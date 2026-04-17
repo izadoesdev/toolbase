@@ -15,8 +15,19 @@ export function registerReadTools(server: McpServer): void {
       description:
         "Fetch reviews submitted by other agents for a catalog product. Each review includes rating, docs_quality, sdk_quality, would_use_again, task context, stack, integration time, what worked, friction points, and recommended/not-recommended use cases.",
       inputSchema: {
+        id: s(
+          z
+            .string()
+            .min(1)
+            .optional()
+            .describe("Catalog product id to fetch reviews for (preferred)")
+        ),
         product_id: s(
-          z.string().min(1).describe("Catalog product id to fetch reviews for")
+          z
+            .string()
+            .min(1)
+            .optional()
+            .describe("Alias for `id` — kept for backward compatibility")
         ),
         limit: s(
           z
@@ -43,15 +54,29 @@ export function registerReadTools(server: McpServer): void {
       },
     },
     async ({
+      id,
       product_id,
       limit,
       offset,
     }: {
-      product_id: string;
+      id?: string;
+      product_id?: string;
       limit?: number;
       offset?: number;
     }) => {
-      const reviews = await getReviews(product_id, {
+      const productId = id ?? product_id;
+      if (!productId) {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: "Missing required argument: pass `id` (preferred) or `product_id`.",
+            },
+          ],
+          isError: true,
+        };
+      }
+      const reviews = await getReviews(productId, {
         limit: limit ?? 20,
         offset: offset ?? 0,
       });
@@ -71,7 +96,12 @@ export function registerReadTools(server: McpServer): void {
           {
             type: "text" as const,
             text: JSON.stringify(
-              { product_id, count: reviews.length, avg_rating: avg, reviews },
+              {
+                product_id: productId,
+                count: reviews.length,
+                avg_rating: avg,
+                reviews,
+              },
               null,
               2
             ),
@@ -88,11 +118,19 @@ export function registerReadTools(server: McpServer): void {
       description:
         "Fetch bug reports and friction points filed by agents during real builds. Each report includes severity, category (docs/api/sdk/pricing/auth), full description, affected version, and workaround if found.",
       inputSchema: {
+        id: s(
+          z
+            .string()
+            .min(1)
+            .optional()
+            .describe("Catalog product id to fetch bug reports for (preferred)")
+        ),
         product_id: s(
           z
             .string()
             .min(1)
-            .describe("Catalog product id to fetch bug reports for")
+            .optional()
+            .describe("Alias for `id` — kept for backward compatibility")
         ),
         limit: s(
           z
@@ -119,15 +157,29 @@ export function registerReadTools(server: McpServer): void {
       },
     },
     async ({
+      id,
       product_id,
       limit,
       offset,
     }: {
-      product_id: string;
+      id?: string;
+      product_id?: string;
       limit?: number;
       offset?: number;
     }) => {
-      const bugs = await getBugReports(product_id, {
+      const productId = id ?? product_id;
+      if (!productId) {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: "Missing required argument: pass `id` (preferred) or `product_id`.",
+            },
+          ],
+          isError: true,
+        };
+      }
+      const bugs = await getBugReports(productId, {
         limit: limit ?? 20,
         offset: offset ?? 0,
       });
@@ -136,7 +188,7 @@ export function registerReadTools(server: McpServer): void {
           {
             type: "text" as const,
             text: JSON.stringify(
-              { product_id, count: bugs.length, bugs },
+              { product_id: productId, count: bugs.length, bugs },
               null,
               2
             ),

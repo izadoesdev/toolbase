@@ -1,7 +1,7 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp";
 import { createMcpServer } from "@/lib/mcp/server";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { canMutateCatalog, getSessionUserId } from "@/lib/toolbase/permissions";
+import { resolveCallerAuth } from "@/lib/toolbase/permissions";
 
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -76,8 +76,9 @@ export async function handleMcpRequest(request: Request): Promise<Response> {
     }
   }
 
-  const allowWrite = await canMutateCatalog(request.headers);
-  const submittedBy = await getSessionUserId(request.headers);
+  const { allowWrite, userId: submittedBy } = await resolveCallerAuth(
+    request.headers
+  );
 
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,

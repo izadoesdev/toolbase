@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ToolInstallCard } from "@/components/tools/tool-install-card";
+import {
+  computeEaseScore,
+  getAgentAuthMode,
+  isAgentReady,
+} from "@/lib/toolbase/leaderboard";
 import {
   computeCompleteness,
   getBugReports,
@@ -9,6 +15,20 @@ import {
   getReviewSummary,
   getReviews,
 } from "@/lib/toolbase/registry";
+
+const AUTH_LABEL: Record<string, string> = {
+  none: "no auth",
+  agent_key: "api key",
+  human_login: "human oauth",
+  unknown: "unknown",
+};
+
+const AUTH_TONE: Record<string, string> = {
+  none: "text-emerald-600 dark:text-emerald-400",
+  agent_key: "text-blue-600 dark:text-blue-400",
+  human_login: "text-amber-600 dark:text-amber-400",
+  unknown: "text-muted-foreground",
+};
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -108,6 +128,13 @@ export default async function ProductPage({ params }: Props) {
   ]);
 
   const completeness = computeCompleteness(product);
+  const agentAuth = getAgentAuthMode(product);
+  const agentReady = isAgentReady(product);
+  const easeScore = computeEaseScore({
+    product,
+    avgRating: reviewSummary.avg_rating,
+    reviewCount: reviewSummary.count,
+  });
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6">
@@ -128,6 +155,21 @@ export default async function ProductPage({ params }: Props) {
                 {product.name}
               </h1>
               {product.mcp.supported && <Badge variant="mcp">MCP</Badge>}
+              {agentReady ? (
+                <span
+                  className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 font-medium font-mono text-[10px] text-emerald-600 uppercase tracking-wider dark:text-emerald-400"
+                  title="An agent can authenticate and complete this integration without a human in the loop"
+                >
+                  agent-ready
+                </span>
+              ) : (
+                <span
+                  className="inline-flex items-center rounded-full bg-amber-500/10 px-2.5 py-0.5 font-medium font-mono text-[10px] text-amber-600 uppercase tracking-wider dark:text-amber-400"
+                  title="This tool requires a human to complete an OAuth consent screen"
+                >
+                  human login
+                </span>
+              )}
               <Badge variant="category">{product.category}</Badge>
               {product.subcategory && (
                 <Badge variant="category">{product.subcategory}</Badge>
@@ -140,6 +182,16 @@ export default async function ProductPage({ params }: Props) {
               {product.description}
             </p>
           </div>
+
+          {/* Install card — persona B's endgame */}
+          {product.mcp.supported && (
+            <ToolInstallCard
+              endpoint={product.mcp.endpoint ?? null}
+              envVar={product.auth?.key_env_var ?? null}
+              id={product.id}
+              name={product.name}
+            />
+          )}
 
           {/* Stats */}
           <div className="flex flex-wrap gap-6 rounded-xl border border-border bg-card px-6 py-4">
@@ -187,6 +239,33 @@ export default async function ProductPage({ params }: Props) {
                 )}
               </div>
             )}
+            <div>
+              <p className="font-mono text-[10px] text-muted-foreground uppercase">
+                Ease score
+              </p>
+              <p className="font-medium text-foreground text-sm">
+                {easeScore}
+                <span className="text-muted-foreground"> / 100</span>
+              </p>
+              <p className="text-muted-foreground text-xs">
+                agent-friendliness
+              </p>
+            </div>
+            <div>
+              <p className="font-mono text-[10px] text-muted-foreground uppercase">
+                Auth
+              </p>
+              <p
+                className={`font-medium text-sm ${AUTH_TONE[agentAuth] ?? "text-foreground"}`}
+              >
+                {AUTH_LABEL[agentAuth]}
+              </p>
+              {product.auth?.key_env_var && (
+                <p className="font-mono text-muted-foreground text-xs">
+                  {product.auth.key_env_var}
+                </p>
+              )}
+            </div>
             <div>
               <p className="font-mono text-[10px] text-muted-foreground uppercase">
                 Completeness
@@ -407,44 +486,42 @@ export default async function ProductPage({ params }: Props) {
             </div>
           )}
 
-          {product.mcp.supported && (
-            <div className="space-y-3 rounded-xl border border-border bg-card p-5">
-              <h3 className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
-                MCP
-              </h3>
-              <dl className="space-y-2 text-sm">
-                {product.mcp.endpoint && (
-                  <div>
-                    <dt className="text-muted-foreground text-xs">Endpoint</dt>
-                    <dd className="break-all font-mono text-foreground text-xs">
-                      {product.mcp.endpoint}
-                    </dd>
-                  </div>
-                )}
-                {product.mcp.transport && (
-                  <div>
-                    <dt className="text-muted-foreground text-xs">Transport</dt>
-                    <dd className="text-foreground">{product.mcp.transport}</dd>
-                  </div>
-                )}
-                {product.mcp.tools && product.mcp.tools.length > 0 && (
-                  <div>
-                    <dt className="text-muted-foreground text-xs">Tools</dt>
-                    <dd className="flex flex-wrap gap-1 pt-1">
-                      {product.mcp.tools.map((t) => (
-                        <span
-                          className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
-                          key={t}
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </dd>
-                  </div>
-                )}
-              </dl>
-            </div>
-          )}
+          {product.mcp.supported &&
+            ((product.mcp.transport ?? null) !== null ||
+              (product.mcp.tools && product.mcp.tools.length > 0)) && (
+              <div className="space-y-3 rounded-xl border border-border bg-card p-5">
+                <h3 className="font-mono text-[10px] text-muted-foreground uppercase tracking-[0.18em]">
+                  MCP details
+                </h3>
+                <dl className="space-y-2 text-sm">
+                  {product.mcp.transport && (
+                    <div>
+                      <dt className="text-muted-foreground text-xs">
+                        Transport
+                      </dt>
+                      <dd className="text-foreground">
+                        {product.mcp.transport}
+                      </dd>
+                    </div>
+                  )}
+                  {product.mcp.tools && product.mcp.tools.length > 0 && (
+                    <div>
+                      <dt className="text-muted-foreground text-xs">Tools</dt>
+                      <dd className="flex flex-wrap gap-1 pt-1">
+                        {product.mcp.tools.map((t) => (
+                          <span
+                            className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+                            key={t}
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            )}
 
           {product.tags.length > 0 && (
             <div className="space-y-3">

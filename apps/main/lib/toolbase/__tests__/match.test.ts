@@ -51,57 +51,68 @@ describe("queryProducts", () => {
   ];
 
   it("returns results matching query terms", () => {
-    const hits = queryProducts("payment", products);
-    expect(hits.length).toBeGreaterThan(0);
-    expect(hits[0].id).toBe("stripe");
+    const page = queryProducts("payment", products);
+    expect(page.hits.length).toBeGreaterThan(0);
+    expect(page.hits[0].id).toBe("stripe");
+    expect(page.total).toBe(page.hits.length);
   });
 
   it("ranks name matches higher than description matches", () => {
-    const hits = queryProducts("stripe", products);
-    expect(hits.length).toBe(1);
-    expect(hits[0].id).toBe("stripe");
-    expect(hits[0].score).toBeGreaterThanOrEqual(5); // name weight
+    const page = queryProducts("stripe", products);
+    expect(page.hits.length).toBe(1);
+    expect(page.hits[0].id).toBe("stripe");
+    expect(page.hits[0].score).toBeGreaterThanOrEqual(5); // name weight
   });
 
   it("returns empty for unmatched queries", () => {
-    const hits = queryProducts("kubernetes container orchestration", products);
-    expect(hits).toEqual([]);
+    const page = queryProducts("kubernetes container orchestration", products);
+    expect(page.hits).toEqual([]);
+    expect(page.total).toBe(0);
   });
 
   it("filters by category", () => {
     // "email" matches category (weight 4, strong) — filtered to email only
-    const hits = queryProducts("email", products, { category: "email" });
-    expect(hits.length).toBe(1);
-    expect(hits[0].id).toBe("resend");
+    const page = queryProducts("email", products, { category: "email" });
+    expect(page.hits.length).toBe(1);
+    expect(page.hits[0].id).toBe("resend");
   });
 
   it("filters by mcp_only", () => {
-    const hits = queryProducts("email api", products, { mcp_only: true });
-    expect(hits.every((h) => h.mcp_supported)).toBe(true);
+    const page = queryProducts("email api", products, { mcp_only: true });
+    expect(page.hits.every((h) => h.mcp_supported)).toBe(true);
   });
 
-  it("respects limit", () => {
-    const all = queryProducts("dev", products, { limit: 1 });
-    expect(all.length).toBeLessThanOrEqual(1);
+  it("respects limit and reports total separately", () => {
+    const page = queryProducts("dev", products, { limit: 1 });
+    expect(page.hits.length).toBeLessThanOrEqual(1);
+    expect(page.total).toBeGreaterThanOrEqual(page.hits.length);
   });
 
   it("requires at least one strong match", () => {
     // "internet" only matches description (weight 1, below STRONG_MATCH_THRESHOLD of 3)
-    const hits = queryProducts("internet", products);
-    expect(hits).toEqual([]);
+    const page = queryProducts("internet", products);
+    expect(page.hits).toEqual([]);
   });
 
-  it("handles empty query", () => {
-    expect(queryProducts("", products)).toEqual([]);
-    expect(queryProducts("   ", products)).toEqual([]);
+  it("empty query with no filters returns nothing", () => {
+    expect(queryProducts("", products).hits).toEqual([]);
+    expect(queryProducts("   ", products).hits).toEqual([]);
+  });
+
+  it("empty query with a filter returns filter-matched products", () => {
+    const page = queryProducts("", products, { category: "email" });
+    expect(page.hits.length).toBe(1);
+    expect(page.hits[0].id).toBe("resend");
+    expect(page.hits[0].match_reason).toBe("matches filters");
+    expect(page.total).toBe(1);
   });
 
   it("matches use_cases when combined with a strong match", () => {
     // "serverless backend" — "backend" matches use_case, "serverless" also in use_case
     // But use_case weight is 2, below threshold. Need a strong match too.
     // "postgres database" — "database" matches category (4), "postgres" matches capability (3)
-    const hits = queryProducts("postgres database", products);
-    expect(hits.some((h) => h.id === "supabase")).toBe(true);
+    const page = queryProducts("postgres database", products);
+    expect(page.hits.some((h) => h.id === "supabase")).toBe(true);
   });
 });
 

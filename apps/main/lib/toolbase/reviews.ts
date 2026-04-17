@@ -7,6 +7,34 @@ import { getProduct } from "./products";
 import type { Review, ReviewInput } from "./schema";
 import { reviewSchema } from "./schema";
 
+// Reviews are submitted by agents over MCP. A small fraction are obvious
+// smoke tests where an author used phrases like "delete me" or "smoke test"
+// while wiring up the write tool. These aren't real signal and skew
+// aggregate ratings, so we hide them at the read layer until an admin
+// deletes them from the database.
+const SMOKE_TEST_PATTERN =
+  /(smoke\s*test|delete\s*me|\btest\s+review\b|\bignore\s+this\b)/i;
+
+function isLikelySmokeTest(r: Review): boolean {
+  const body = r.body ?? "";
+  if (body.length > 120) {
+    return false;
+  }
+  if (SMOKE_TEST_PATTERN.test(body)) {
+    return true;
+  }
+  // Very terse review with zero structured signal is also unlikely to help.
+  if (
+    body.length < 20 &&
+    r.worked_well.length === 0 &&
+    r.friction_points.length === 0 &&
+    r.integration_time_minutes === undefined
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export async function submitReview(
   input: ReviewInput
 ): Promise<{ id: string; ok: true } | { error: string; ok: false }> {
@@ -45,7 +73,9 @@ export async function getReviews(
       .limit(opts.limit)
       .offset(opts.offset)
       .orderBy(reviewTable.createdAt);
-    return rows.map((r) => reviewSchema.parse(r.data));
+    return rows
+      .map((r) => reviewSchema.parse(r.data))
+      .filter((r) => !isLikelySmokeTest(r));
   } catch (err) {
     console.error("[registry] Failed to get reviews for", productId, err);
     return [];

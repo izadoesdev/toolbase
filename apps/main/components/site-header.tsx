@@ -23,6 +23,12 @@ export function SiteHeader() {
           >
             Catalog
           </Link>
+          <Link
+            className="rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+            href="/leaderboard"
+          >
+            Leaderboard
+          </Link>
           <a
             className="rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
             href="https://github.com/izadoesdev/toolbase"

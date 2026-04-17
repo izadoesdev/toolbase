@@ -19,14 +19,19 @@ function s<T extends z.ZodType>(schema: T): AnySchema {
   return schema as unknown as AnySchema;
 }
 
-const UNAUTHORIZED =
-  "Write access requires an authenticated session. The user must sign in before this tool can be called.";
-
 export function registerWriteTools(
   server: McpServer,
   options: CreateMcpServerOptions
 ): void {
   const { allowWrite, submittedBy } = options;
+
+  // Unauthenticated sessions don't see the write tools at all. This avoids
+  // leaking the required-field schema via validation errors when a caller
+  // probes with garbage arguments, and keeps tools/list honest about what the
+  // current session can actually use.
+  if (!allowWrite) {
+    return;
+  }
 
   server.registerTool(
     "toolbase_review",
@@ -150,12 +155,6 @@ export function registerWriteTools(
       recommended_for?: string[];
       not_recommended_for?: string[];
     }) => {
-      if (!allowWrite) {
-        return {
-          content: [{ type: "text" as const, text: UNAUTHORIZED }],
-          isError: true,
-        };
-      }
       const result = await submitReview(input);
       if (!result.ok) {
         return {
@@ -238,12 +237,6 @@ export function registerWriteTools(
       affected_version?: string;
       workaround?: string;
     }) => {
-      if (!allowWrite) {
-        return {
-          content: [{ type: "text" as const, text: UNAUTHORIZED }],
-          isError: true,
-        };
-      }
       const result = await submitBugReport(input);
       if (!result.ok) {
         return {
@@ -276,12 +269,6 @@ export function registerWriteTools(
       },
     },
     async (product: Product) => {
-      if (!allowWrite) {
-        return {
-          content: [{ type: "text" as const, text: UNAUTHORIZED }],
-          isError: true,
-        };
-      }
       const result = await addProductToDb(product, submittedBy ?? undefined);
       if (!result.ok) {
         return {
@@ -351,12 +338,6 @@ export function registerWriteTools(
       patch: Record<string, unknown>;
       note?: string;
     }) => {
-      if (!allowWrite) {
-        return {
-          content: [{ type: "text" as const, text: UNAUTHORIZED }],
-          isError: true,
-        };
-      }
       const patchWithNote = note
         ? {
             ...patch,

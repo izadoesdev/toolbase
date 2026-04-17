@@ -4,11 +4,86 @@ import { cacheLife, cacheTag } from "next/cache";
 import { db } from "@/lib/db";
 import { catalogProduct } from "@/lib/db/schema";
 import { buildEmbeddingDoc, embedDocument, embedQuery } from "./embed";
-import type { QueryFilters, RelatedHit } from "./match";
+import type { QueryFilters, QueryHit, QueryPage, RelatedHit } from "./match";
 import { findRelatedProducts, productToHit, queryProducts } from "./match";
 import { getReviewSummary } from "./reviews";
 import type { Product } from "./schema";
 import { productSchema } from "./schema";
+
+const WORD_SPLIT = /[\s_-]+/;
+const STOPWORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "for",
+  "in",
+  "of",
+  "on",
+  "or",
+  "the",
+  "to",
+  "with",
+]);
+
+function semanticMatchReasons(product: Product, query: string): string[] {
+  const terms = query
+    .toLowerCase()
+    .split(WORD_SPLIT)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 3 && !STOPWORDS.has(t));
+
+  if (terms.length === 0) {
+    return [`semantic match for '${query}'`];
+  }
+
+  const hitCapabilities: string[] = [];
+  const hitTags: string[] = [];
+  let categoryMatched = false;
+  let nameMatched = false;
+
+  const name = product.name.toLowerCase();
+  const category = product.category.toLowerCase();
+  const subcategory = product.subcategory?.toLowerCase() ?? "";
+
+  for (const term of terms) {
+    if (name.includes(term)) {
+      nameMatched = true;
+    }
+    if (category.includes(term) || subcategory.includes(term)) {
+      categoryMatched = true;
+    }
+    for (const cap of product.capabilities) {
+      const c = cap.toLowerCase().replaceAll("_", " ");
+      if (c.includes(term) && !hitCapabilities.includes(cap)) {
+        hitCapabilities.push(cap);
+      }
+    }
+    for (const tag of product.tags) {
+      const t = tag.toLowerCase();
+      if (t.includes(term) && !hitTags.includes(tag)) {
+        hitTags.push(tag);
+      }
+    }
+  }
+
+  const reasons: string[] = [];
+  if (nameMatched) {
+    reasons.push(`name matches '${query}'`);
+  }
+  if (categoryMatched) {
+    reasons.push(`category '${product.category}' matches`);
+  }
+  if (hitCapabilities.length > 0) {
+    reasons.push(`capability match: ${hitCapabilities.slice(0, 3).join(", ")}`);
+  }
+  if (hitTags.length > 0 && reasons.length < 3) {
+    reasons.push(`tag match: ${hitTags.slice(0, 3).join(", ")}`);
+  }
+  if (reasons.length === 0) {
+    reasons.push(`semantic match for '${query}'`);
+  }
+  return reasons.slice(0, 3);
+}
 
 export async function listProducts(opts?: {
   limit?: number;
@@ -30,9 +105,7 @@ export async function listProducts(opts?: {
   });
 }
 
-async function enrichWithReviews(
-  hits: ReturnType<typeof queryProducts>
-): Promise<ReturnType<typeof queryProducts>> {
+async function enrichWithReviews(hits: QueryHit[]): Promise<QueryHit[]> {
   const summaries = await Promise.all(
     hits.map((hit) => getReviewSummary(hit.id))
   );
@@ -43,13 +116,11 @@ async function enrichWithReviews(
   }));
 }
 
-function applyReviewBoost(
-  hits: Awaited<ReturnType<typeof enrichWithReviews>>
-): typeof hits {
+function applyReviewBoost(hits: QueryHit[]): QueryHit[] {
   const boosted = hits.map((hit) => {
     let boost = 0;
-    const rc = (hit as { review_count?: number }).review_count ?? 0;
-    const ar = (hit as { avg_rating?: number }).avg_rating ?? 0;
+    const rc = hit.review_count ?? 0;
+    const ar = hit.avg_rating ?? 0;
     if (rc > 0) {
       boost += 1;
     }
@@ -64,14 +135,18 @@ function applyReviewBoost(
 export async function searchProducts(
   query: string,
   filters?: QueryFilters
-): Promise<ReturnType<typeof queryProducts>> {
-  let hits: ReturnType<typeof queryProducts>;
-  if (process.env.VOYAGE_API_KEY) {
+): Promise<QueryPage> {
+  const trimmed = query.trim();
+
+  if (process.env.VOYAGE_API_KEY && trimmed.length > 0) {
     try {
-      const embedding = await embedQuery(query);
-      hits = await vectorSearchProducts(embedding, query, filters);
-      const enriched = await enrichWithReviews(hits);
-      return applyReviewBoost(enriched);
+      const embedding = await embedQuery(trimmed);
+      const page = await vectorSearchProducts(embedding, trimmed, filters);
+      const enriched = await enrichWithReviews(page.hits);
+      return {
+        hits: applyReviewBoost(enriched),
+        total: page.total,
+      };
     } catch (err) {
       console.error(
         "[registry] Vector search failed, falling back to keyword search",
@@ -79,17 +154,21 @@ export async function searchProducts(
       );
     }
   }
+
   const products = await listProducts();
-  hits = queryProducts(query, products, filters);
-  const enriched = await enrichWithReviews(hits);
-  return applyReviewBoost(enriched);
+  const page = queryProducts(trimmed, products, filters);
+  const enriched = await enrichWithReviews(page.hits);
+  return {
+    hits: applyReviewBoost(enriched),
+    total: page.total,
+  };
 }
 
 async function vectorSearchProducts(
   embedding: number[],
   query: string,
   filters?: QueryFilters
-): Promise<ReturnType<typeof queryProducts>> {
+): Promise<QueryPage> {
   const vecStr = `[${embedding.join(",")}]`;
   const limit = filters?.limit ?? 10;
   const offset = filters?.offset ?? 0;
@@ -140,8 +219,14 @@ async function vectorSearchProducts(
   }
 
   const whereClause = sql.join(conditions, sql` AND `);
-  const result = await db.execute<{ id: string; data: unknown; score: string }>(
-    sql`SELECT id, data, 1 - (embedding <=> ${vecStr}::vector) AS score
+  const result = await db.execute<{
+    id: string;
+    data: unknown;
+    score: string;
+    total_count: string;
+  }>(
+    sql`SELECT id, data, 1 - (embedding <=> ${vecStr}::vector) AS score,
+               COUNT(*) OVER() AS total_count
         FROM catalog_product
         WHERE ${whereClause}
         ORDER BY embedding <=> ${vecStr}::vector
@@ -149,16 +234,26 @@ async function vectorSearchProducts(
         OFFSET ${offset}`
   );
 
-  return result.rows.flatMap((row) => {
+  const total = result.rows[0]
+    ? Number.parseInt(result.rows[0].total_count, 10)
+    : 0;
+
+  const hits = result.rows.flatMap((row) => {
     const parsed = productSchema.safeParse(row.data);
     if (!parsed.success) {
       return [];
     }
     const score = Number.parseFloat(row.score);
     return [
-      productToHit(parsed.data, score, [`semantic match for '${query}'`]),
+      productToHit(
+        parsed.data,
+        score,
+        semanticMatchReasons(parsed.data, query)
+      ),
     ];
   });
+
+  return { hits, total };
 }
 
 export async function getRelatedProducts(
@@ -170,13 +265,18 @@ export async function getRelatedProducts(
   cacheTag("products", `product:${id}`);
   if (process.env.VOYAGE_API_KEY) {
     try {
-      const embResult = await db.execute<{ embedding: string | null }>(
-        sql`SELECT embedding FROM catalog_product
+      const targetRes = await db.execute<{
+        embedding: string | null;
+        data: unknown;
+      }>(
+        sql`SELECT embedding, data FROM catalog_product
             WHERE id = ${id} AND status = 'approved' AND embedding IS NOT NULL
             LIMIT 1`
       );
-      const embStr = embResult.rows[0]?.embedding;
-      if (embStr) {
+      const targetRow = targetRes.rows[0];
+      const embStr = targetRow?.embedding;
+      const target = targetRow ? productSchema.safeParse(targetRow.data) : null;
+      if (embStr && target?.success) {
         const result = await db.execute<{
           id: string;
           data: unknown;
@@ -190,12 +290,22 @@ export async function getRelatedProducts(
               ORDER BY embedding <=> ${embStr}::vector
               LIMIT ${limit}`
         );
+        const targetAlts = new Set(target.data.alternatives ?? []);
         const hits = result.rows.flatMap((row) => {
           const parsed = productSchema.safeParse(row.data);
           if (!parsed.success) {
             return [];
           }
           const p = parsed.data;
+          let relation: RelatedHit["relation"] = "complementary";
+          if (
+            targetAlts.has(p.id) ||
+            p.alternatives?.includes(target.data.id)
+          ) {
+            relation = "alternative";
+          } else if (p.category === target.data.category) {
+            relation = "same_category";
+          }
           return [
             {
               category: p.category,
@@ -204,7 +314,7 @@ export async function getRelatedProducts(
               mcp_supported: p.mcp.supported,
               name: p.name,
               pricing_model: p.pricing.model,
-              relation: "complementary" as const,
+              relation,
               score: Number.parseFloat(row.score),
             } satisfies RelatedHit,
           ];

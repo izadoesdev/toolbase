@@ -1,3 +1,4 @@
+import { agentAuth } from "@better-auth/agent-auth";
 import { apiKey } from "@better-auth/api-key";
 import { oauthProvider } from "@better-auth/oauth-provider";
 import { betterAuth } from "better-auth";
@@ -57,6 +58,20 @@ export const auth = betterAuth({
       allowDynamicClientRegistration: true,
       allowUnauthenticatedClientRegistration: true,
       validAudiences: [`${base}/api/mcp`],
+    }),
+    agentAuth({
+      providerName: "Toolbase",
+      providerDescription:
+        "The directory of developer tools agents can run end-to-end. Register autonomously to submit reviews, bug reports, and new products.",
+      modes: ["autonomous", "delegated"],
+      allowDynamicHostRegistration: true,
+      capabilities: [],
+      resolveAutonomousUser: ({ hostId, agentId, hostName }) => ({
+        id: `agent:${hostId}:${agentId}`,
+        email: `${agentId}@agents.toolbase.sh`,
+        name: hostName ? `${hostName} agent` : "Autonomous agent",
+        emailVerified: true,
+      }),
     }),
   ],
 });

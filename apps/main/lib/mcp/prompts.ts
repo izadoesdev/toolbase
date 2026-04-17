@@ -6,6 +6,18 @@ function s<T extends z.ZodType>(schema: T): AnySchema {
   return schema as unknown as AnySchema;
 }
 
+// Catalog ids are slug-like: a–z, 0–9, `-`, `_`, `.`. Prompts interpolate
+// this value into natural-language text, so reject anything that could
+// inject instructions (quotes, newlines, punctuation).
+const catalogIdSchema = z
+  .string()
+  .min(1)
+  .max(128)
+  .regex(
+    /^[a-z0-9][a-z0-9._-]*$/i,
+    "Must be a catalog slug: letters, digits, '.', '-', '_' (max 128 chars)"
+  );
+
 export function registerPrompts(server: McpServer): void {
   server.registerPrompt(
     "discover_tools",
@@ -89,7 +101,7 @@ export function registerPrompts(server: McpServer): void {
         "Fetch a product record and its reviews, then explain it for a developer.",
       argsSchema: {
         product_id: s(
-          z.string().min(1).describe("Catalog id (e.g. stripe, supabase)")
+          catalogIdSchema.describe("Catalog id (e.g. stripe, supabase)")
         ),
       },
     },
@@ -123,10 +135,7 @@ export function registerPrompts(server: McpServer): void {
         "Guide the agent through filing a structured review for a tool it just used.",
       argsSchema: {
         product_id: s(
-          z
-            .string()
-            .min(1)
-            .describe("Catalog id of the tool you just integrated")
+          catalogIdSchema.describe("Catalog id of the tool you just integrated")
         ),
       },
     },
